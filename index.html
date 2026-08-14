@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QTP StratIQ | Professional Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -24,87 +26,146 @@
 <body class="bg-darkbg text-gray-100 min-h-screen antialiased">
     <div class="max-w-3xl mx-auto px-4 py-10">
         
-        <!-- Header Branding -->
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-extrabold tracking-wider bg-gradient-to-r from-neoncyan to-white bg-clip-text text-transparent">
-                QTP STRAT<span class="text-neongold">IQ</span>
-            </h1>
-            <p class="text-xs text-gray-400 mt-1 uppercase tracking-widest">Professional Strategy Automation Suite</p>
-        </div>
-        
-        <!-- Main Form Card -->
-        <form id="proForm" class="bg-cardbg p-6 sm:p-8 rounded-2xl border border-gray-800 shadow-2xl space-y-6">
-            
-            <!-- Platform & Logic Selectors -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Target Platform</label>
-                    <select id="targetPlatform" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
-                        <option value="mql5">MetaTrader 5 (MQL5)</option>
-                        <option value="pine">TradingView (Pine v6)</option>
-                        <option value="webhook">Webhook JSON Payload</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Strategy Methodology</label>
-                    <select id="strategyType" onchange="toggleMethodologyInputs()" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
-                        <option value="smc">Smart Money Concepts (SMC)</option>
-                        <option value="ema">EMA Crossover</option>
-                    </select>
-                </div>
+        <!-- Header Branding & Auth Status -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-extrabold tracking-wider bg-gradient-to-r from-neoncyan to-white bg-clip-text text-transparent">
+                    QTP STRAT<span class="text-neongold">IQ</span>
+                </h1>
+                <p class="text-xs text-gray-400 mt-1 uppercase tracking-widest">Professional Strategy Automation Suite</p>
             </div>
-
-            <!-- Parameters Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Risk %</label>
-                    <input type="number" id="riskPercent" value="1.0" step="0.1" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
-                </div>
-                
-                <!-- SMC Specific Input -->
-                <div id="smcInputs">
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Swing Lookback</label>
-                    <input type="number" id="swingPeriod" value="10" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
-                </div>
-
-                <!-- EMA Specific Inputs (Hidden by default) -->
-                <div id="emaFastContainer" class="hidden">
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Fast EMA</label>
-                    <input type="number" id="fastMa" value="9" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
-                </div>
-                <div id="emaSlowContainer" class="hidden">
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Slow EMA</label>
-                    <input type="number" id="slowMa" value="21" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Session Filter</label>
-                    <select id="sessionFilter" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
-                        <option value="yes">London / NY Overlap</option>
-                        <option value="no">24/7 Execution</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Action Button -->
-            <button type="submit" class="w-full py-4 bg-gradient-to-r from-neoncyan to-blue-500 text-black font-bold text-sm tracking-wide rounded-xl hover:opacity-90 transition shadow-lg shadow-cyan-500/20">
-                Generate Custom System
-            </button>
-        </form>
-
-        <!-- Output Code Box with Copy Button -->
-        <div id="outputContainer" class="mt-8 hidden">
-            <div class="flex items-center justify-between mb-2">
-                <label class="block text-xs font-semibold text-neongold uppercase">Compiled System Output:</label>
-                <button id="copyBtn" onclick="copyCode()" class="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-neoncyan text-xs font-semibold rounded-lg border border-gray-700 transition">
-                    📋 Copy Code
+            <div id="authContainer">
+                <button id="loginBtn" onclick="loginWithGoogle()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-neoncyan text-xs font-semibold rounded-xl border border-gray-700 transition">
+                    🔐 Sign In / Register
                 </button>
             </div>
-            <pre id="output" class="bg-black p-4 rounded-xl text-cyan-300 text-xs overflow-x-auto max-h-96 border border-gray-800"></pre>
+        </div>
+        
+        <!-- Main Form Card (Gated) -->
+        <div id="gatedContent" class="hidden">
+            <form id="proForm" class="bg-cardbg p-6 sm:p-8 rounded-2xl border border-gray-800 shadow-2xl space-y-6">
+                
+                <!-- Platform & Logic Selectors -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Target Platform</label>
+                        <select id="targetPlatform" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
+                            <option value="mql5">MetaTrader 5 (MQL5)</option>
+                            <option value="pine">TradingView (Pine v6)</option>
+                            <option value="webhook">Webhook JSON Payload</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Strategy Methodology</label>
+                        <select id="strategyType" onchange="toggleMethodologyInputs()" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
+                            <option value="smc">Smart Money Concepts (SMC)</option>
+                            <option value="ema">EMA Crossover</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Parameters Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Risk %</label>
+                        <input type="number" id="riskPercent" value="1.0" step="0.1" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
+                    </div>
+                    
+                    <!-- SMC Specific Input -->
+                    <div id="smcInputs">
+                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Swing Lookback</label>
+                        <input type="number" id="swingPeriod" value="10" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
+                    </div>
+
+                    <!-- EMA Specific Inputs (Hidden by default) -->
+                    <div id="emaFastContainer" class="hidden">
+                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Fast EMA</label>
+                        <input type="number" id="fastMa" value="9" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
+                    </div>
+                    <div id="emaSlowContainer" class="hidden">
+                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Slow EMA</label>
+                        <input type="number" id="slowMa" value="21" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Session Filter</label>
+                        <select id="sessionFilter" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
+                            <option value="yes">London / NY Overlap</option>
+                            <option value="no">24/7 Execution</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <button type="submit" class="w-full py-4 bg-gradient-to-r from-neoncyan to-blue-500 text-black font-bold text-sm tracking-wide rounded-xl hover:opacity-90 transition shadow-lg shadow-cyan-500/20">
+                    Generate Custom System
+                </button>
+            </form>
+
+            <!-- Output Code Box with Copy Button -->
+            <div id="outputContainer" class="mt-8 hidden">
+                <div class="flex items-center justify-between mb-2">
+                    <label class="block text-xs font-semibold text-neongold uppercase">Compiled System Output:</label>
+                    <button id="copyBtn" onclick="copyCode()" class="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-neoncyan text-xs font-semibold rounded-lg border border-gray-700 transition">
+                        📋 Copy Code
+                    </button>
+                </div>
+                <pre id="output" class="bg-black p-4 rounded-xl text-cyan-300 text-xs overflow-x-auto max-h-96 border border-gray-800"></pre>
+            </div>
+        </div>
+
+        <!-- Public Locked State Banner -->
+        <div id="lockedBanner" class="bg-cardbg p-10 rounded-2xl border border-gray-800 text-center space-y-4 shadow-2xl">
+            <h3 class="text-xl font-bold text-white">🔒 Institutional Access Required</h3>
+            <p class="text-xs text-gray-400 max-w-md mx-auto">Please sign in with your account to unlock the QTP Strategy Builder, backtest parameters, and automated webhook compilation suite.</p>
+            <button onclick="loginWithGoogle()" class="px-6 py-3 bg-gradient-to-r from-neoncyan to-blue-500 text-black font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg transition">
+                Sign In to Unlock Generator
+            </button>
         </div>
     </div>
 
     <script>
+        // Initialize Supabase (Replace with your project keys from supabase.com)
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function checkUserSession() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const gatedContent = document.getElementById('gatedContent');
+            const lockedBanner = document.getElementById('lockedBanner');
+            const authContainer = document.getElementById('authContainer');
+
+            if (session) {
+                gatedContent.classList.remove('hidden');
+                lockedBanner.classList.add('hidden');
+                authContainer.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs text-gray-400 hidden sm:inline">${session.user.email}</span>
+                        <button onclick="logout()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-red-400 text-xs font-semibold rounded-xl border border-gray-700 transition">Logout</button>
+                    </div>
+                `;
+            } else {
+                gatedContent.classList.add('hidden');
+                lockedBanner.classList.remove('hidden');
+            }
+        }
+
+        async function loginWithGoogle() {
+            await supabaseClient.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: window.location.origin }
+            });
+        }
+
+        async function logout() {
+            await supabaseClient.auth.signOut();
+            window.location.reload();
+        }
+
+        // Run check on load
+        checkUserSession();
+
         function toggleMethodologyInputs() {
             const strategy = document.getElementById('strategyType').value;
             const smcDiv = document.getElementById('smcInputs');
@@ -122,7 +183,7 @@
             }
         }
 
-        document.getElementById('proForm').addEventListener('submit', async (e) => {
+        document.getElementById('proForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const payload = {
                 platform: document.getElementById('targetPlatform').value,

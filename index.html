@@ -53,7 +53,7 @@
                 </div>
             </div>
 
-            <!-- Parameters Grid (Stacked cleanly on mobile, 3 columns on larger screens) -->
+            <!-- Parameters Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Risk %</label>
@@ -75,9 +75,14 @@
             </button>
         </form>
 
-        <!-- Output Code Box -->
+        <!-- Output Code Box with Copy Button -->
         <div id="outputContainer" class="mt-8 hidden">
-            <label class="block text-xs font-semibold text-neongold uppercase mb-2">Compiled System Output:</label>
+            <div class="flex items-center justify-between mb-2">
+                <label class="block text-xs font-semibold text-neongold uppercase">Compiled System Output:</label>
+                <button id="copyBtn" onclick="copyCode()" class="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-neoncyan text-xs font-semibold rounded-lg border border-gray-700 transition">
+                    📋 Copy Code
+                </button>
+            </div>
             <pre id="output" class="bg-black p-4 rounded-xl text-cyan-300 text-xs overflow-x-auto max-h-96 border border-gray-800"></pre>
         </div>
     </div>
@@ -107,6 +112,17 @@
                 alert('Translation error. Please check backend connection.');
             }
         });
+
+        function copyCode() {
+            const codeText = document.getElementById('output').textContent;
+            navigator.clipboard.writeText(codeText).then(() => {
+                const btn = document.getElementById('copyBtn');
+                btn.textContent = '✅ Copied!';
+                setTimeout(() => {
+                    btn.textContent = '📋 Copy Code';
+                }, 2000);
+            });
+        }
     </script>
 </body>
 </html>

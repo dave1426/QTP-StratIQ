@@ -125,7 +125,7 @@
     </div>
 
     <script>
-        // REPLACE THESE WITH YOUR ACTUAL SUPABASE KEYS WHEN READY
+        // REPLACE THESE WITH YOUR ACTUAL SUPABASE KEYS
         const SUPABASE_URL = 'https://placeholder.supabase.co';
         const SUPABASE_ANON_KEY = 'placeholder-key';
         
@@ -165,8 +165,8 @@
         }
 
         async function loginWithGoogle() {
-            if (!supabaseClient) {
-                alert('Supabase credentials are not configured yet. Please add your project URL and Anon Key to enable authentication.');
+            if (!supabaseClient || SUPABASE_URL === 'https://placeholder.supabase.co') {
+                alert('Supabase credentials are not configured yet. Please update SUPABASE_URL and SUPABASE_ANON_KEY in your index.html file.');
                 return;
             }
             try {

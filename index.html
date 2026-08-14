@@ -125,18 +125,17 @@
     </div>
 
     <script>
-        // REPLACE THESE WITH YOUR ACTUAL SUPABASE KEYS
-        const SUPABASE_URL = 'https://your-actual-project-id.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...your-real-key-here';
-
+        // REPLACE WITH YOUR ACTUAL SUPABASE URL AND ANON KEY
+        const SUPABASE_URL = 'https://YOUR-REAL-PROJECT-ID.supabase.co';
+        const SUPABASE_ANON_KEY = 'YOUR_REAL_ANON_KEY_HERE';
         
         let supabaseClient = null;
         try {
-            if (SUPABASE_URL !== 'https://placeholder.supabase.co') {
+            if (SUPABASE_URL.includes('supabase.co')) {
                 supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             }
         } catch (e) {
-            console.warn('Supabase not fully configured yet.');
+            console.warn('Supabase initialization failed.');
         }
 
         async function checkUserSession() {
@@ -166,8 +165,8 @@ const SUPABASE_ANON_KEY = 'eyJhGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...your-real-key-h
         }
 
         async function loginWithGoogle() {
-            if (!supabaseClient || SUPABASE_URL === 'https://placeholder.supabase.co') {
-                alert('Supabase credentials are not configured yet. Please update SUPABASE_URL and SUPABASE_ANON_KEY in your index.html file.');
+            if (!supabaseClient) {
+                alert('Please configure your real Supabase URL and Anon Key in index.html.');
                 return;
             }
             try {

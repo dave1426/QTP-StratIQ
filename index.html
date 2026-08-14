@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QTP StratIQ | Professional Suite & Backtester</title>
+    <title>QTP StratIQ | Institutional Automation Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -36,7 +36,7 @@
             <h1 class="text-3xl font-extrabold tracking-wider bg-gradient-to-r from-neoncyan to-white bg-clip-text text-transparent">
                 QTP STRAT<span class="text-neongold">IQ</span>
             </h1>
-            <p class="text-xs text-gray-400 mt-1 uppercase tracking-widest">Professional Strategy Automation & Backtest Engine</p>
+            <p class="text-xs text-gray-400 mt-1 uppercase tracking-widest">Professional Strategy Automation & Live Telemetry</p>
         </div>
 
         <!-- Section 1: Strategy Builder Hub -->
@@ -106,9 +106,72 @@
             <pre id="output" class="bg-black p-4 rounded-xl text-cyan-300 text-xs overflow-x-auto max-h-64 border border-gray-800"></pre>
         </div>
 
-        <!-- Section 2: Institutional Backtest & PDF Report Suite -->
+        <!-- Section 2: Live Monitor Dashboard -->
         <div class="bg-cardbg p-6 sm:p-8 rounded-2xl border border-gray-800 shadow-2xl space-y-6">
-            <h2 class="text-sm font-bold text-neongold uppercase tracking-wide border-b border-gray-800 pb-2">2. Backtest Metrics & Branded PDF Report</h2>
+            <div class="flex justify-between items-center border-b border-gray-800 pb-2">
+                <h2 class="text-sm font-bold text-neongold uppercase tracking-wide">2. Live Bot Telemetry & Monitor</h2>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-500/10 border border-green-500/30 rounded-full text-[10px] font-semibold text-green-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span> SYSTEM ONLINE
+                </span>
+            </div>
+
+            <!-- Metrics Overview Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="bg-darkbg p-3.5 rounded-xl border border-gray-800">
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wider">Active Bots</p>
+                    <p class="text-xl font-bold text-white mt-1">4 / 4</p>
+                </div>
+                <div class="bg-darkbg p-3.5 rounded-xl border border-gray-800">
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wider">Today's P&L</p>
+                    <p class="text-xl font-bold text-green-400 mt-1">+$1,420.50</p>
+                </div>
+                <div class="bg-darkbg p-3.5 rounded-xl border border-gray-800">
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wider">Live Win Rate</p>
+                    <p class="text-xl font-bold text-neoncyan mt-1">71.4%</p>
+                </div>
+                <div class="bg-darkbg p-3.5 rounded-xl border border-gray-800">
+                    <p class="text-[10px] text-gray-400 uppercase tracking-wider">Max Drawdown</p>
+                    <p class="text-xl font-bold text-red-400 mt-1">1.8%</p>
+                </div>
+            </div>
+
+            <!-- Active Bots Feed -->
+            <div class="space-y-3">
+                <p class="text-xs font-semibold text-gray-400 uppercase">Deployed System Instances</p>
+                
+                <div class="bg-darkbg p-4 rounded-xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-white">QTP SPECTATOR v4.2 (XAUUSD)</span>
+                            <span class="px-2 py-0.5 bg-neoncyan/10 text-neoncyan text-[9px] font-semibold rounded border border-neoncyan/30">MQL5</span>
+                        </div>
+                        <p class="text-[11px] text-gray-400 mt-1">SMC Structure Shift + Session Filter Active</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs font-bold text-green-400">+$840.00 (2.1R)</p>
+                        <p class="text-[10px] text-gray-500">Last Ping: 12s ago</p>
+                    </div>
+                </div>
+
+                <div class="bg-darkbg p-4 rounded-xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-white">QTP BREAKBIAS v3.3 (GER30)</span>
+                            <span class="px-2 py-0.5 bg-neongold/10 text-neongold text-[9px] font-semibold rounded border border-neongold/30">Pine v6</span>
+                        </div>
+                        <p class="text-[11px] text-gray-400 mt-1">London Open Breakout Model</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs font-bold text-green-400">+$580.50 (1.6R)</p>
+                        <p class="text-[10px] text-gray-500">Last Ping: 45s ago</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Backtest & PDF Report Suite -->
+        <div class="bg-cardbg p-6 sm:p-8 rounded-2xl border border-gray-800 shadow-2xl space-y-6">
+            <h2 class="text-sm font-bold text-neongold uppercase tracking-wide border-b border-gray-800 pb-2">3. Backtest Metrics & Branded PDF Report</h2>
             
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div>

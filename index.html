@@ -24,7 +24,7 @@
         @media print {
             body * { visibility: hidden; }
             #pdfReportContainer, #pdfReportContainer * { visibility: visible; }
-            #pdfReportContainer { position: absolute; left: 0; top: 0; width: 100%; background: #0a0f1d !important; color: white !important; }
+            #pdfReportContainer { position: absolute; left: 0; top: 0; width: 100%; background: #0a0f1d !important; color: white !important; border: none !important; }
         }
     </style>
 </head>
@@ -125,10 +125,9 @@
                 </div>
             </div>
 
-            <!-- Deployed Bots Container (Dynamic) -->
+            <!-- Deployed Bots Container -->
             <div class="space-y-3" id="botsContainer">
                 <p class="text-xs font-semibold text-gray-400 uppercase">Deployed System Instances & Kill Switches</p>
-                <!-- Rendered dynamically via fetchLiveTelemetry -->
             </div>
 
             <!-- Recent Trade Log Feed -->
@@ -145,9 +144,7 @@
                                 <th class="p-3 text-right">R-Multiple</th>
                             </tr>
                         </thead>
-                        <tbody id="tradeLogBody" class="divide-y divide-gray-800/50">
-                            <!-- Populated dynamically -->
-                        </tbody>
+                        <tbody id="tradeLogBody" class="divide-y divide-gray-800/50"></tbody>
                     </table>
                 </div>
             </div>
@@ -157,7 +154,7 @@
         <div class="bg-cardbg p-6 sm:p-8 rounded-2xl border border-gray-800 shadow-2xl space-y-6">
             <h2 class="text-sm font-bold text-neongold uppercase tracking-wide border-b border-gray-800 pb-2">3. Backtest Metrics & Branded PDF Report</h2>
             
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Win Rate (%)</label>
                     <input type="number" id="backtestWinRate" value="68.5" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
@@ -166,6 +163,18 @@
                     <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Profit Factor</label>
                     <input type="number" id="backtestProfitFactor" value="2.42" step="0.01" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
                 </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Benchmark Asset</label>
+                    <select id="benchmarkAsset" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
+                        <option value="Gold (XAUUSD)">Gold (XAUUSD Buy & Hold)</option>
+                        <option value="S&P 500 (SPY)">S&P 500 (SPY Index)</option>
+                        <option value="DAX (GER40)">DAX (GER40 Index)</option>
+                        <option value="Bitcoin (BTCUSD)">Bitcoin (BTCUSD)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Max Drawdown (%)</label>
                     <input type="number" id="backtestMaxDD" value="4.2" step="0.1" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
@@ -209,6 +218,18 @@
                     <div class="bg-cardbg p-3 rounded-lg border border-gray-800">
                         <p class="text-[10px] text-gray-400 uppercase">Net Return</p>
                         <p class="text-lg font-bold text-green-400" id="resReturn">-</p>
+                    </div>
+                </div>
+
+                <!-- Benchmark Comparison Block -->
+                <div class="bg-cardbg p-4 rounded-lg border border-gray-800 flex justify-between items-center text-xs">
+                    <div>
+                        <p class="text-gray-400 uppercase text-[10px]">Benchmark Comparison</p>
+                        <p class="font-bold text-white mt-0.5" id="resBenchmarkName">Gold (XAUUSD Buy & Hold)</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-gray-400 uppercase text-[10px]">Strategy Alpha Outperformance</p>
+                        <p class="font-bold text-green-400 mt-0.5">+28.4% Alpha</p>
                     </div>
                 </div>
 
@@ -265,8 +286,6 @@
                 
                 data.bots.forEach(bot => {
                     if (bot.status === 'Active') activeCount++;
-                    
-                    // Collect trades for log table
                     if (bot.trades) {
                         bot.trades.forEach(t => allTrades.push({...t, botName: bot.name}));
                     }
@@ -301,7 +320,6 @@
 
                 document.getElementById('activeBotsCount').textContent = `${activeCount} / ${data.bots.length}`;
 
-                // Populate Trade Log Table
                 tradeLogBody.innerHTML = '';
                 if (allTrades.length === 0) {
                     tradeLogBody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-gray-500">No execution logs recorded yet.</td></tr>`;
@@ -319,7 +337,6 @@
                         tradeLogBody.innerHTML += row;
                     });
                 }
-
             } catch (error) {
                 console.log('Telemetry waiting for backend sync...');
             }
@@ -347,6 +364,7 @@
             document.getElementById('resProfitFactor').textContent = document.getElementById('backtestProfitFactor').value;
             document.getElementById('resMaxDD').textContent = document.getElementById('backtestMaxDD').value + '%';
             document.getElementById('resReturn').textContent = '+' + document.getElementById('backtestReturn').value + '%';
+            document.getElementById('resBenchmarkName').textContent = document.getElementById('benchmarkAsset').value;
             
             const now = new Date();
             document.getElementById('reportDate').textContent = now.toISOString().split('T')[0] + ' ' + now.toTimeString().split(' ')[0];

@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# In-memory store for active bot telemetry
+# In-memory storage for active bot telemetry
 active_bots_state = [
     {"id": "1", "name": "QTP SPECTATOR v4.2 (XAUUSD)", "platform": "MQL5", "status": "Active", "pnl": "+$840.00 (2.1R)", "lastPing": "Just now"},
     {"id": "2", "name": "QTP BREAKBIAS v3.3 (GER30)", "platform": "Pine v6", "status": "Active", "pnl": "+$580.50 (1.6R)", "lastPing": "45s ago"}
@@ -16,7 +16,6 @@ def translate_strategy():
     logic = data.get('logic', 'smc')
     risk = data.get('risk', '1.0')
     
-    # Generate syntax templates based on user parameters
     if platform == 'mql5':
         code = f"""//+------------------------------------------------------------------+
 //|                                              QTP_Auto_System.mq5 |
@@ -30,15 +29,11 @@ def translate_strategy():
 input double RiskPercent = {risk};
 input string LogicType   = "{logic}";
 
-//+------------------------------------------------------------------+
-//| Expert initialization function                                   |
-//+------------------------------------------------------------------+
 int OnInit()
 {{
    Print("QTP System Initialized: Risk ", RiskPercent, "%");
    return(INIT_SUCCEEDED);
 }}
-//+------------------------------------------------------------------+
 """
     elif platform == 'webhook':
         code = f"""{{
@@ -54,7 +49,6 @@ strategy("QTP StratIQ System", overlay=true, default_qty_type=strategy.percent_o
 logicType = input.string("{logic}", title="Methodology")
 swingLen  = input.int(10, title="Swing Period")
 
-// Core QTP {logic.upper()} Engine
 isBOS = ta.crossover(close, ta.highest(high, swingLen))
 isCHoCH = ta.crossunder(close, ta.lowest(low, swingLen))
 
@@ -72,8 +66,16 @@ if (isCHoCH)
 def handle_webhook():
     incoming_data = request.json
     print("Incoming Webhook Payload:", incoming_data)
-    # You can update active_bots_state or database values here when alerts trigger
-    return jsonify({"status": "success", "message": "Webhook logged successfully"}), 200
+    
+    bot_name = incoming_data.get('name', 'QTP System')
+    pnl = incoming_data.get('pnl', '+$0.00')
+    
+    for bot in active_bots_state:
+        if bot['name'] in bot_name or bot_name in bot['name']:
+            bot['pnl'] = pnl
+            bot['lastPing'] = 'Just now'
+            
+    return jsonify({"status": "success", "message": "Telemetry updated successfully"}), 200
 
 # 3. Telemetry Endpoint for Dashboard Monitoring
 @app.route('/api/telemetry', methods=['GET'])

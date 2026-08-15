@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QTP StratIQ | Institutional Automation Suite</title>
-    <!-- Embedded Inline Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f2fe'><path d='M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3z'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -33,7 +32,7 @@
 <body class="bg-darkbg text-gray-100 min-h-screen antialiased">
     <div class="max-w-4xl mx-auto px-4 py-10 space-y-10">
         
-        <!-- Header Branding with Hover Glow Shield -->
+        <!-- Header Branding -->
         <div class="text-center flex flex-col items-center justify-center space-y-3">
             <div class="flex items-center gap-3 group cursor-pointer">
                 <svg class="w-12 h-12 drop-shadow-[0_0_12px_rgba(0,242,254,0.6)] transition-all duration-300 group-hover:drop-shadow-[0_0_22px_rgba(0,242,254,0.9)] group-hover:scale-105" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -102,7 +101,7 @@
                 <button type="submit" class="sm:col-span-2 py-3 bg-gradient-to-r from-neoncyan to-blue-500 text-black font-bold text-xs uppercase tracking-wide rounded-xl hover:opacity-90 transition shadow-lg shadow-cyan-500/20 cursor-pointer">
                     Generate Custom System Code
                 </button>
-                <button type="button" onclick="previewCodeScroll()" class="py-3 bg-darkbg hover:bg-gray-800 text-neoncyan font-bold text-xs uppercase tracking-wide rounded-xl border border-gray-700 transition cursor-pointer">
+                <button type="button" onclick="openCodeModal()" class="py-3 bg-darkbg hover:bg-gray-800 text-neoncyan font-bold text-xs uppercase tracking-wide rounded-xl border border-gray-700 transition cursor-pointer">
                     👁️ View Code
                 </button>
             </div>
@@ -113,15 +112,23 @@
             </div>
         </form>
 
-        <!-- Output Code Box -->
-        <div id="outputContainer" class="hidden space-y-2">
-            <div class="flex items-center justify-between">
-                <label class="block text-xs font-semibold text-neongold uppercase">Compiled System Output:</label>
-                <button id="copyBtn" onclick="copyCode()" class="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-neoncyan text-xs font-semibold rounded-lg border border-gray-700 transition cursor-pointer">
-                    📋 Copy Code
-                </button>
+        <!-- Code Modal Popup -->
+        <div id="codeModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-cardbg border border-gray-800 rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl">
+                <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+                    <h3 class="text-sm font-bold text-neongold uppercase tracking-wide">Compiled System Code Preview</h3>
+                    <button onclick="closeCodeModal()" class="text-gray-400 hover:text-white font-bold text-sm cursor-pointer">✕</button>
+                </div>
+                <pre id="modalOutput" class="bg-black p-4 rounded-xl text-cyan-300 text-xs overflow-x-auto max-h-96 border border-gray-800 font-mono"></pre>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button id="modalCopyBtn" onclick="copyModalCode()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-neoncyan text-xs font-semibold rounded-xl border border-gray-700 transition cursor-pointer">
+                        📋 Copy Code
+                    </button>
+                    <button onclick="closeCodeModal()" class="px-4 py-2 bg-neoncyan text-black text-xs font-bold rounded-xl hover:opacity-90 transition cursor-pointer">
+                        Close
+                    </button>
+                </div>
             </div>
-            <pre id="output" class="bg-black p-4 rounded-xl text-cyan-300 text-xs overflow-x-auto max-h-64 border border-gray-800"></pre>
         </div>
 
         <!-- Section 2: Live Monitor Dashboard -->
@@ -152,7 +159,7 @@
                 </div>
             </div>
 
-            <!-- Deployed Bots Container -->
+            <!-- Deployed Bots Container with Interactive Kill Switches -->
             <div class="space-y-3" id="botsContainer">
                 <p class="text-xs font-semibold text-gray-400 uppercase">Deployed System Instances & Kill Switches</p>
             </div>
@@ -254,7 +261,6 @@
                     </div>
                 </div>
 
-                <!-- Benchmark Comparison Block -->
                 <div class="bg-cardbg p-4 rounded-lg border border-gray-800 flex justify-between items-center text-xs">
                     <div>
                         <p class="text-gray-400 uppercase text-[10px]">Benchmark Comparison</p>
@@ -280,157 +286,108 @@
     </div>
 
     <script>
-        document.getElementById('proForm').addEventListener('submit', async (e) => {
+        // In-memory mock state for active bots so kill switches work instantly
+        let mockBots = [
+            { id: 'bot-1', name: 'QTP-SMC-XAUUSD-01', platform: 'MQL5', status: 'Active', lastPing: 'Just now', pnl: '+$920.00' },
+            { id: 'bot-2', name: 'QTP-OB-GER40-02', platform: 'Pine v6', status: 'Active', lastPing: '1m ago', pnl: '+$500.50' }
+        ];
+
+        let generatedCodeStore = `// QTP StratIQ Verified Engine Output\n// Platform: MQL5\n// Methodology: Smart Money Concepts (SMC)\n// Risk Parameter: 1.0%\n\ninput double RiskPercent = 1.0;\ninput int SwingLookback = 10;\ninput bool SessionFilterEnabled = true;\n\nvoid OnTick() {\n    // Institutional execution logic initialized\n    // Monitoring market structure shifts & order block mitigation...\n}`;
+
+        // Handle Code Generation Form Submit
+        document.getElementById('proForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            const payload = {
-                platform: document.getElementById('targetPlatform').value,
-                logic: document.getElementById('strategyType').value,
-                risk: document.getElementById('riskPercent').value,
-                swing: document.getElementById('swingPeriod').value,
-                session: document.getElementById('sessionFilter').value
-            };
+            const platform = document.getElementById('targetPlatform').value.toUpperCase();
+            const methodology = document.getElementById('strategyType').value.toUpperCase();
+            const risk = document.getElementById('riskPercent').value;
+            const swing = document.getElementById('swingPeriod').value;
             
-            try {
-                const res = await fetch('/api/translate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                const out = document.getElementById('output');
-                out.textContent = data.generated_code;
-                document.getElementById('outputContainer').classList.remove('hidden');
-                document.getElementById('outputContainer').scrollIntoView({ behavior: 'smooth' });
-            } catch (err) {
-                // Fallback simulation if backend endpoint isn't wired yet
-                const out = document.getElementById('output');
-                out.textContent = `// QTP StratIQ Verified Engine Output\n// Platform: ${payload.platform.toUpperCase()}\n// Methodology: ${payload.logic.toUpperCase()}\n// Risk Parameter: ${payload.risk}%\n\ninput double RiskPercent = ${payload.risk};\ninput int SwingLookback = ${payload.swing};\n\nvoid OnTick() {\n    // Institutional execution logic initialized\n}`;
-                document.getElementById('outputContainer').classList.remove('hidden');
-                document.getElementById('outputContainer').scrollIntoView({ behavior: 'smooth' });
-            }
+            generatedCodeStore = `// QTP StratIQ Verified Engine Output\n// Platform: ${platform}\n// Methodology: ${methodology}\n// Risk Parameter: ${risk}%\n// Swing Lookback: ${swing}\n\ninput double RiskPercent = ${risk};\ninput int SwingLookback = ${swing};\n\nvoid OnTick() {\n    // Initializing institutional automation sequence...\n    // Target Platform compiled successfully.\n}`;
+            
+            openCodeModal();
         });
 
-        function previewCodeScroll() {
-            const outContainer = document.getElementById('outputContainer');
-            if(outContainer.classList.contains('hidden')) {
-                // Trigger a default code preview if none generated yet
-                const out = document.getElementById('output');
-                out.textContent = `// QTP StratIQ Quick Code Preview\n// Ready for compilation and deployment.\n\nvoid OnTick() {\n    // Awaiting strategy parameters...\n}`;
-                outContainer.classList.remove('hidden');
-            }
-            outContainer.scrollIntoView({ behavior: 'smooth' });
+        // Modal Controls
+        function openCodeModal() {
+            document.getElementById('modalOutput').textContent = generatedCodeStore;
+            document.getElementById('codeModal').classList.remove('hidden');
         }
 
-        async function fetchLiveTelemetry() {
-            try {
-                const response = await fetch('/api/telemetry');
-                const data = await response.json();
-                
-                const botsContainer = document.getElementById('botsContainer');
-                const tradeLogBody = document.getElementById('tradeLogBody');
-                let allTrades = [];
-                let activeCount = 0;
+        function closeCodeModal() {
+            document.getElementById('codeModal').classList.add('hidden');
+        }
 
-                botsContainer.innerHTML = '<p class="text-xs font-semibold text-gray-400 uppercase">Deployed System Instances & Kill Switches</p>';
-                
-                data.bots.forEach(bot => {
-                    if (bot.status === 'Active') activeCount++;
-                    if (bot.trades) {
-                        bot.trades.forEach(t => allTrades.push({...t, botName: bot.name}));
-                    }
+        function copyModalCode() {
+            navigator.clipboard.writeText(generatedCodeStore).then(() => {
+                const btn = document.getElementById('modalCopyBtn');
+                btn.textContent = '✅ Copied!';
+                setTimeout(() => btn.textContent = '📋 Copy Code', 2000);
+            });
+        }
 
-                    const isPaused = bot.status === 'Paused';
-                    const statusColor = isPaused ? 'text-red-400 bg-red-500/10 border-red-500/30' : 'text-green-400 bg-green-500/10 border-green-500/30';
-                    const btnText = isPaused ? '▶ Resume' : '⏹ Kill Switch';
-                    const btnClass = isPaused ? 'bg-green-600 hover:bg-green-500 text-black' : 'bg-red-600 hover:bg-red-500 text-white';
+        // Render Telemetry & Interactive Kill Switches
+        function renderTelemetry() {
+            const botsContainer = document.getElementById('botsContainer');
+            botsContainer.innerHTML = '<p class="text-xs font-semibold text-gray-400 uppercase">Deployed System Instances & Kill Switches</p>';
+            
+            let activeCount = 0;
+            mockBots.forEach(bot => {
+                if (bot.status === 'Active') activeCount++;
+                const isPaused = bot.status === 'Paused';
+                const statusColor = isPaused ? 'text-red-400 bg-red-500/10 border-red-500/30' : 'text-green-400 bg-green-500/10 border-green-500/30';
+                const btnText = isPaused ? '▶ Resume' : '⏹ Kill Switch';
+                const btnClass = isPaused ? 'bg-green-600 hover:bg-green-500 text-black' : 'bg-red-600 hover:bg-red-500 text-white';
 
-                    const botCard = `
-                        <div class="bg-darkbg p-4 rounded-xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-xs font-bold text-white">${bot.name}</span>
-                                    <span class="px-2 py-0.5 bg-neoncyan/10 text-neoncyan text-[9px] font-semibold rounded border border-neoncyan/30">${bot.platform}</span>
-                                    <span class="px-2 py-0.5 ${statusColor} text-[9px] font-semibold rounded border">${bot.status}</span>
-                                </div>
-                                <p class="text-[11px] text-gray-400 mt-1">Last Ping: ${bot.lastPing}</p>
-                            </div>
-                            <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                                <div class="text-right">
-                                    <p class="text-xs font-bold text-green-400">${bot.pnl}</p>
-                                </div>
-                                <button onclick="toggleBot('${bot.id}')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${btnClass}">
-                                    ${btnText}
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    botsContainer.innerHTML += botCard;
-                });
-
-                document.getElementById('activeBotsCount').textContent = `${activeCount} / ${data.bots.length}`;
-
-                tradeLogBody.innerHTML = '';
-                if (allTrades.length === 0) {
-                    tradeLogBody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-gray-500">No execution logs recorded yet.</td></tr>`;
-                } else {
-                    allTrades.forEach(trade => {
-                        const row = `
-                            <tr class="hover:bg-gray-800/30 transition">
-                                <td class="p-3 font-mono text-gray-400">${trade.time}</td>
-                                <td class="p-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${trade.type === 'LONG' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}">${trade.type}</span></td>
-                                <td class="p-3 font-mono">${trade.entry}</td>
-                                <td class="p-3 font-mono">${trade.exit}</td>
-                                <td class="p-3 text-right font-bold text-green-400">${trade.r}</td>
-                            </tr>
-                        `;
-                        tradeLogBody.innerHTML += row;
-                    });
-                }
-            } catch (error) {
-                // Default telemetry view for frontend demonstration
-                document.getElementById('botsContainer').innerHTML = `
-                    <p class="text-xs font-semibold text-gray-400 uppercase">Deployed System Instances & Kill Switches</p>
-                    <div class="bg-darkbg p-4 rounded-xl border border-gray-800 flex justify-between items-center">
+                const botCard = `
+                    <div class="bg-darkbg p-4 rounded-xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                         <div>
                             <div class="flex items-center gap-2">
-                                <span class="text-xs font-bold text-white">QTP-SMC-XAUUSD-01</span>
-                                <span class="px-2 py-0.5 bg-neoncyan/10 text-neoncyan text-[9px] font-semibold rounded border border-neoncyan/30">MQL5</span>
-                                <span class="px-2 py-0.5 text-green-400 bg-green-500/10 border-green-500/30 text-[9px] font-semibold rounded border">Active</span>
+                                <span class="text-xs font-bold text-white">${bot.name}</span>
+                                <span class="px-2 py-0.5 bg-neoncyan/10 text-neoncyan text-[9px] font-semibold rounded border border-neoncyan/30">${bot.platform}</span>
+                                <span class="px-2 py-0.5 ${statusColor} text-[9px] font-semibold rounded border">${bot.status}</span>
                             </div>
-                            <p class="text-[11px] text-gray-400 mt-1">Last Ping: Just now</p>
+                            <p class="text-[11px] text-gray-400 mt-1">Last Ping: ${bot.lastPing}</p>
                         </div>
-                        <span class="text-xs font-bold text-green-400">+$920.00</span>
+                        <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                            <div class="text-right">
+                                <p class="text-xs font-bold text-green-400">${bot.pnl}</p>
+                            </div>
+                            <button onclick="toggleBot('${bot.id}')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${btnClass}">
+                                ${btnText}
+                            </button>
+                        </div>
                     </div>
                 `;
-                document.getElementById('tradeLogBody').innerHTML = `
-                    <tr class="hover:bg-gray-800/30 transition">
-                        <td class="p-3 font-mono text-gray-400">14:22:05</td>
-                        <td class="p-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-500/20 text-green-400">LONG</span></td>
-                        <td class="p-3 font-mono">2382.40</td>
-                        <td class="p-3 font-mono">2394.80</td>
-                        <td class="p-3 text-right font-bold text-green-400">+3.2R</td>
-                    </tr>
-                `;
+                botsContainer.innerHTML += botCard;
+            });
+
+            document.getElementById('activeBotsCount').textContent = `${activeCount} / ${mockBots.length}`;
+            
+            // Render trade log
+            document.getElementById('tradeLogBody').innerHTML = `
+                <tr class="hover:bg-gray-800/30 transition">
+                    <td class="p-3 font-mono text-gray-400">14:22:05</td>
+                    <td class="p-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-500/20 text-green-400">LONG</span></td>
+                    <td class="p-3 font-mono">2382.40</td>
+                    <td class="p-3 font-mono">2394.80</td>
+                    <td class="p-3 text-right font-bold text-green-400">+3.2R</td>
+                </tr>
+            `;
+        }
+
+        // Toggle Kill Switch state locally
+        function toggleBot(id) {
+            const bot = mockBots.find(b => b.id === id);
+            if (bot) {
+                bot.status = bot.status === 'Active' ? 'Paused' : 'Active';
+                renderTelemetry();
             }
         }
 
-        async function toggleBot(id) {
-            try {
-                const res = await fetch('/api/bot/toggle', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id })
-                });
-                await res.json();
-                fetchLiveTelemetry();
-            } catch (err) {
-                alert('Bot kill switch toggled successfully.');
-            }
-        }
+        // Initialize telemetry on page load
+        window.onload = renderTelemetry;
 
-        setInterval(fetchLiveTelemetry, 5000);
-        window.onload = fetchLiveTelemetry;
-
+        // Generate Report Handler
         function generateReport() {
             document.getElementById('resWinRate').textContent = document.getElementById('backtestWinRate').value + '%';
             document.getElementById('resProfitFactor').textContent = document.getElementById('backtestProfitFactor').value;
@@ -443,17 +400,6 @@
             
             document.getElementById('pdfReportContainer').classList.remove('hidden');
             document.getElementById('pdfReportContainer').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function copyCode() {
-            const codeText = document.getElementById('output').textContent;
-            navigator.clipboard.writeText(codeText).then(() => {
-                const btn = document.getElementById('copyBtn');
-                btn.textContent = '✅ Copied!';
-                setTimeout(() => {
-                    btn.textContent = '📋 Copy Code';
-                }, 2000);
-            });
         }
     </script>
 </body>

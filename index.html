@@ -4,40 +4,109 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QTP StratIQ | Institutional Automation Suite</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f2fe'><path d='M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3z'/></svg>">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        darkbg: '#0a0f1d',
-                        cardbg: '#111827',
-                        neoncyan: '#00f2fe',
-                        neongold: '#ffd700',
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        body { background-color: #0a0f1d; color: #f3f4f6; font-family: ui-sans-serif, system-ui, sans-serif; margin: 0; padding: 0; }
+        :root {
+            --darkbg: #0a0f1d;
+            --cardbg: #111827;
+            --neoncyan: #00f2fe;
+            --neongold: #ffd700;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: #1f2937;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: var(--darkbg); color: var(--text-main); font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; min-height: 100vh; padding: 40px 16px; }
+        .container { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px; }
+
+        /* Header */
+        .header { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .logo-wrap { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .logo-wrap svg { width: 48px; height: 48px; filter: drop-shadow(0 0 12px rgba(0, 242, 254, 0.6)); }
+        .title { font-size: 28px; font-weight: 800; letter-spacing: 1px; background: linear-gradient(to right, var(--neoncyan), #ffffff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .title span { color: var(--neongold); -webkit-text-fill-color: var(--neongold); }
+        .subtitle { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; }
+
+        /* Cards / Sections */
+        .card { background-color: var(--cardbg); padding: 28px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; gap: 20px; }
+        .section-title { font-size: 12px; font-weight: 700; color: var(--neongold); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+
+        /* Form Controls */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        @media (max-width: 640px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+
+        .control-group { display: flex; flex-direction: column; gap: 8px; }
+        label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+        select, input { width: 100%; background-color: var(--darkbg); border: 1px solid #374151; border-radius: 10px; padding: 12px; color: #fff; font-size: 14px; outline: none; }
+        select:focus, input:focus { border-color: var(--neoncyan); }
+
+        /* Buttons */
+        .btn-row { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; padding-top: 8px; }
+        @media (max-width: 640px) { .btn-row { grid-template-columns: 1fr; } }
+        
+        .btn-primary { background: linear-gradient(to right, var(--neoncyan), #2563eb); color: #000; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; padding: 14px; border-radius: 10px; border: none; cursor: pointer; transition: opacity 0.2s; box-shadow: 0 10px 15px -3px rgba(0, 242, 254, 0.2); }
+        .btn-primary:hover { opacity: 0.9; }
+        
+        .btn-secondary { background-color: var(--darkbg); color: var(--neoncyan); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; padding: 14px; border-radius: 10px; border: 1px solid #374151; cursor: pointer; transition: background 0.2s; }
+        .btn-secondary:hover { background-color: #1f2937; }
+
+        .btn-full { width: 100%; }
+
+        /* Telemetry Stat Cards */
+        .stat-box { background-color: var(--darkbg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); }
+        .stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 18px; font-weight: 700; color: #fff; margin-top: 4px; }
+        .text-green { color: #4ade80 !important; }
+        .text-cyan { color: var(--neoncyan) !important; }
+        .text-red { color: #f87171 !important; }
+
+        /* Tables & Lists */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; color: #d1d5db; }
+        thead { background-color: var(--darkbg); font-size: 10px; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border-color); }
+        th, td { padding: 12px; }
+        tr:not(:last-child) { border-bottom: 1px solid rgba(31, 41, 55, 0.5); }
+
+        /* Modal Overlay */
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; }
+        .modal-content { background-color: var(--cardbg); border: 1px solid var(--border-color); border-radius: 16px; max-width: 650px; width: 100%; padding: 24px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 16px; font-weight: bold; cursor: pointer; }
+        .modal-close:hover { color: #fff; }
+        
+        pre { background-color: #000; padding: 16px; border-radius: 10px; color: #67e8f9; font-size: 12px; font-family: ui-monospace, monospace; overflow-x: auto; max-height: 350px; border: 1px solid var(--border-color); }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 12px; }
+
+        /* Dynamic Bot Instances */
+        .bot-instance { background-color: var(--darkbg); padding: 16px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .badge { padding: 3px 8px; font-size: 9px; font-weight: 600; border-radius: 4px; text-transform: uppercase; display: inline-block; }
+        .badge-cyan { background-color: rgba(0, 242, 254, 0.1); color: var(--neoncyan); border: 1px solid rgba(0, 242, 254, 0.3); }
+        .badge-green { background-color: rgba(74, 222, 128, 0.1); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
+        .badge-red { background-color: rgba(248, 113, 113, 0.1); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.3); }
+
+        .btn-kill { padding: 6px 12px; font-size: 11px; font-weight: bold; border-radius: 6px; border: none; cursor: pointer; }
+        .btn-kill.active { background-color: #dc2626; color: #fff; }
+        .btn-kill.paused { background-color: #16a34a; color: #fff; }
+
         .hidden { display: none !important; }
+        .footer-stamp { text-align: center; font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: 2px; font-family: monospace; }
+        
         @media print {
             body * { visibility: hidden; }
             #pdfReportContainer, #pdfReportContainer * { visibility: visible; }
-            #pdfReportContainer { position: absolute; left: 0; top: 0; width: 100%; background: #0a0f1d !important; color: white !important; border: none !important; }
+            #pdfReportContainer { position: absolute; left: 0; top: 0; width: 100%; background: var(--darkbg) !important; color: #fff !important; border: none !important; padding: 20px; }
         }
     </style>
 </head>
-<body class="bg-darkbg text-gray-100 min-h-screen antialiased">
-    <div class="max-w-4xl mx-auto px-4 py-10 space-y-10">
+<body>
+    <div class="container">
         
-        <!-- Header Branding -->
-        <div class="text-center flex flex-col items-center justify-center space-y-3">
-            <div class="flex items-center gap-3 group cursor-pointer">
-                <svg class="w-12 h-12 drop-shadow-[0_0_12px_rgba(0,242,254,0.6)]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-wrap">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 2L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 2Z" fill="url(#shieldGrad)" stroke="#00f2fe" stroke-width="1.5" stroke-linejoin="round"/>
                     <path d="M8 12L10 14L14 9" stroke="#0a0f1d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     <rect x="11" y="9" width="1.5" height="4" fill="#00f2fe"/>
@@ -49,29 +118,27 @@
                         </linearGradient>
                     </defs>
                 </svg>
-                <h1 class="text-3xl font-extrabold tracking-wider bg-gradient-to-r from-neoncyan to-white bg-clip-text text-transparent">
-                    QTP STRAT<span class="text-neongold">IQ</span>
-                </h1>
+                <h1 class="title">QTP STRAT<span>IQ</span></h1>
             </div>
-            <p class="text-xs text-gray-400 uppercase tracking-widest">Professional Strategy Automation & Live Telemetry</p>
+            <p class="subtitle">Professional Strategy Automation & Live Telemetry</p>
         </div>
 
         <!-- Section 1: Strategy Builder Hub -->
-        <form id="proForm" class="bg-cardbg p-6 sm:p-8 rounded-2xl border border-gray-800 shadow-2xl space-y-6">
-            <h2 class="text-sm font-bold text-neongold uppercase tracking-wide border-b border-gray-800 pb-2">1. Strategy Code Generator</h2>
+        <form id="proForm" class="card">
+            <h2 class="section-title">1. Strategy Code Generator</h2>
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Target Platform</label>
-                    <select id="targetPlatform" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
+            <div class="grid-2">
+                <div class="control-group">
+                    <label>Target Platform</label>
+                    <select id="targetPlatform">
                         <option value="mql5">MetaTrader 5 (MQL5)</option>
                         <option value="pine">TradingView (Pine v6)</option>
                         <option value="webhook">Webhook JSON Payload</option>
                     </select>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Strategy Methodology</label>
-                    <select id="strategyType" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
+                <div class="control-group">
+                    <label>Strategy Methodology</label>
+                    <select id="strategyType">
                         <option value="smc">Smart Money Concepts (SMC)</option>
                         <option value="ob">Order Block Mitigation</option>
                         <option value="sweep">Liquidity Sweep</option>
@@ -80,125 +147,114 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Risk %</label>
-                    <input type="number" id="riskPercent" value="1.0" step="0.1" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
+            <div class="grid-3">
+                <div class="control-group">
+                    <label>Risk %</label>
+                    <input type="number" id="riskPercent" value="1.0" step="0.1">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Swing Lookback</label>
-                    <input type="number" id="swingPeriod" value="10" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
+                <div class="control-group">
+                    <label>Swing Lookback</label>
+                    <input type="number" id="swingPeriod" value="10">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Session Filter</label>
-                    <select id="sessionFilter" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
+                <div class="control-group">
+                    <label>Session Filter</label>
+                    <select id="sessionFilter">
                         <option value="yes">London / NY Overlap</option>
                         <option value="no">24/7 Execution</option>
                     </select>
                 </div>
             </div>
 
-            <!-- Dual Action Buttons -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                <button type="submit" class="sm:col-span-2 py-3 bg-gradient-to-r from-neoncyan to-blue-500 text-black font-bold text-xs uppercase tracking-wide rounded-xl hover:opacity-90 transition shadow-lg shadow-cyan-500/20 cursor-pointer">
-                    Generate Custom System Code
-                </button>
-                <button type="button" onclick="openCodeModal()" class="py-3 bg-darkbg hover:bg-gray-800 text-neoncyan font-bold text-xs uppercase tracking-wide rounded-xl border border-gray-700 transition cursor-pointer">
-                    👁️ View Code
-                </button>
+            <div class="btn-row">
+                <button type="submit" class="btn-primary">Generate Custom System Code</button>
+                <button type="button" onclick="openCodeModal()" class="btn-secondary">👁️ View Code</button>
             </div>
 
-            <div class="text-center pt-2 border-t border-gray-800/60">
-                <p class="text-[10px] text-gray-500 uppercase tracking-widest font-mono">© 2026 QTP StratIQ | Verified Engine Output</p>
-            </div>
+            <div class="footer-stamp" style="border-top: 1px solid #1f2937; padding-top: 12px;">© 2026 QTP StratIQ | Verified Engine Output</div>
         </form>
 
-        <!-- Code Modal Popup -->
-        <div id="codeModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-            <div class="bg-cardbg border border-gray-800 rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl">
-                <div class="flex justify-between items-center border-b border-gray-800 pb-3">
-                    <h3 class="text-sm font-bold text-neongold uppercase tracking-wide">Compiled System Code Preview</h3>
-                    <button onclick="closeCodeModal()" class="text-gray-400 hover:text-white font-bold text-sm cursor-pointer">✕</button>
+        <!-- Code Modal Popup (Hidden by default) -->
+        <div id="codeModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="section-title" style="border:none; padding:0; margin:0;">Compiled System Code Preview</h3>
+                    <button type="button" onclick="closeCodeModal()" class="modal-close">✕</button>
                 </div>
-                <pre id="modalOutput" class="bg-black p-4 rounded-xl text-cyan-300 text-xs overflow-x-auto max-h-96 border border-gray-800 font-mono"></pre>
-                <div class="flex justify-end gap-3 pt-2">
-                    <button id="modalCopyBtn" onclick="copyModalCode()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-neoncyan text-xs font-semibold rounded-xl border border-gray-700 transition cursor-pointer">
-                        📋 Copy Code
-                    </button>
-                    <button onclick="closeCodeModal()" class="px-4 py-2 bg-neoncyan text-black text-xs font-bold rounded-xl hover:opacity-90 transition cursor-pointer">
-                        Close
-                    </button>
+                <pre id="modalOutput"></pre>
+                <div class="modal-footer">
+                    <button type="button" id="modalCopyBtn" onclick="copyModalCode()" class="btn-secondary">📋 Copy Code</button>
+                    <button type="button" onclick="closeCodeModal()" class="btn-primary">Close</button>
                 </div>
             </div>
         </div>
 
         <!-- Section 2: Live Monitor Dashboard -->
-        <div class="bg-cardbg p-6 sm:p-8 rounded-2xl border border-gray-800 shadow-2xl space-y-6">
-            <div class="flex justify-between items-center border-b border-gray-800 pb-2">
-                <h2 class="text-sm font-bold text-neongold uppercase tracking-wide">2. Live Bot Telemetry & Monitor</h2>
-                <span id="systemStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-500/10 border border-green-500/30 rounded-full text-[10px] font-semibold text-green-400">
-                    <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span> SYSTEM ONLINE
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                <h2 class="section-title" style="border:none; padding:0; margin:0;">2. Live Bot Telemetry & Monitor</h2>
+                <span class="badge badge-green" style="display: flex; align-items: center; gap: 6px;">
+                    <span style="width: 6px; height: 6px; background-color: #4ade80; border-radius: 50%;"></span> SYSTEM ONLINE
                 </span>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div class="bg-darkbg p-3.5 rounded-xl border border-gray-800">
-                    <p class="text-[10px] text-gray-400 uppercase tracking-wider">Active Bots</p>
-                    <p class="text-xl font-bold text-white mt-1" id="activeBotsCount">2 / 2</p>
+            <div class="grid-4">
+                <div class="stat-box">
+                    <div class="stat-label">Active Bots</div>
+                    <div class="stat-value" id="activeBotsCount">2 / 2</div>
                 </div>
-                <div class="bg-darkbg p-3.5 rounded-xl border border-gray-800">
-                    <p class="text-[10px] text-gray-400 uppercase tracking-wider">Today's P&L</p>
-                    <p class="text-xl font-bold text-green-400 mt-1">+$1,420.50</p>
+                <div class="stat-box">
+                    <div class="stat-label">Today's P&L</div>
+                    <div class="stat-value text-green">+$1,420.50</div>
                 </div>
-                <div class="bg-darkbg p-3.5 rounded-xl border border-gray-800">
-                    <p class="text-[10px] text-gray-400 uppercase tracking-wider">Live Win Rate</p>
-                    <p class="text-xl font-bold text-neoncyan mt-1">71.4%</p>
+                <div class="stat-box">
+                    <div class="stat-label">Live Win Rate</div>
+                    <div class="stat-value text-cyan">71.4%</div>
                 </div>
-                <div class="bg-darkbg p-3.5 rounded-xl border border-gray-800">
-                    <p class="text-[10px] text-gray-400 uppercase tracking-wider">Max Drawdown</p>
-                    <p class="text-xl font-bold text-red-400 mt-1">1.8%</p>
+                <div class="stat-box">
+                    <div class="stat-label">Max Drawdown</div>
+                    <div class="stat-value text-red">1.8%</div>
                 </div>
             </div>
 
-            <div class="space-y-3" id="botsContainer">
-                <p class="text-xs font-semibold text-gray-400 uppercase">Deployed System Instances & Kill Switches</p>
+            <div style="display: flex; flex-direction: column; gap: 12px;" id="botsContainer">
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Deployed System Instances & Kill Switches</div>
             </div>
 
-            <div class="space-y-3 pt-4 border-t border-gray-800">
-                <p class="text-xs font-semibold text-gray-400 uppercase">Recent Execution Log</p>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs text-gray-300">
-                        <thead class="bg-darkbg text-[10px] text-gray-400 uppercase border-b border-gray-800">
+            <div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Recent Execution Log</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
                             <tr>
-                                <th class="p-3">Time</th>
-                                <th class="p-3">Type</th>
-                                <th class="p-3">Entry</th>
-                                <th class="p-3">Exit</th>
-                                <th class="p-3 text-right">R-Multiple</th>
+                                <th>Time</th>
+                                <th>Type</th>
+                                <th>Entry</th>
+                                <th>Exit</th>
+                                <th style="text-align: right;">R-Multiple</th>
                             </tr>
                         </thead>
-                        <tbody id="tradeLogBody" class="divide-y divide-gray-800/50"></tbody>
+                        <tbody id="tradeLogBody"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- Section 3: Backtest & PDF Report Suite -->
-        <div class="bg-cardbg p-6 sm:p-8 rounded-2xl border border-gray-800 shadow-2xl space-y-6">
-            <h2 class="text-sm font-bold text-neongold uppercase tracking-wide border-b border-gray-800 pb-2">3. Backtest Metrics & Branded PDF Report</h2>
+        <!-- Section 3: Backtest & Report Suite -->
+        <div class="card">
+            <h2 class="section-title">3. Backtest Metrics & Branded PDF Report</h2>
             
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Win Rate (%)</label>
-                    <input type="number" id="backtestWinRate" value="68.5" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
+            <div class="grid-3">
+                <div class="control-group">
+                    <label>Win Rate (%)</label>
+                    <input type="number" id="backtestWinRate" value="68.5">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Profit Factor</label>
-                    <input type="number" id="backtestProfitFactor" value="2.42" step="0.01" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
+                <div class="control-group">
+                    <label>Profit Factor</label>
+                    <input type="number" id="backtestProfitFactor" value="2.42" step="0.01">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Benchmark Asset</label>
-                    <select id="benchmarkAsset" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
+                <div class="control-group">
+                    <label>Benchmark Asset</label>
+                    <select id="benchmarkAsset">
                         <option value="Gold (XAUUSD)">Gold (XAUUSD Buy & Hold)</option>
                         <option value="S&P 500 (SPY)">S&P 500 (SPY Index)</option>
                         <option value="DAX (GER40)">DAX (GER40 Index)</option>
@@ -207,84 +263,70 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Max Drawdown (%)</label>
-                    <input type="number" id="backtestMaxDD" value="4.2" step="0.1" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
+            <div class="grid-2">
+                <div class="control-group">
+                    <label>Max Drawdown (%)</label>
+                    <input type="number" id="backtestMaxDD" value="4.2" step="0.1">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Total Net Return (%)</label>
-                    <input type="number" id="backtestReturn" value="44.8" step="0.1" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
+                <div class="control-group">
+                    <label>Total Net Return (%)</label>
+                    <input type="number" id="backtestReturn" value="44.8" step="0.1">
                 </div>
             </div>
 
-            <button type="button" onclick="generateReport()" class="w-full py-3 bg-gray-800 hover:bg-gray-700 text-neoncyan font-bold text-xs uppercase tracking-wide rounded-xl border border-gray-700 transition cursor-pointer">
-                📊 Generate Branded Executive Report
-            </button>
+            <button type="button" onclick="generateReport()" class="btn-secondary btn-full">📊 Generate Branded Executive Report</button>
 
-            <!-- PDF Report Preview Box -->
-            <div id="pdfReportContainer" class="hidden bg-darkbg p-6 rounded-xl border border-neoncyan/40 space-y-6 mt-4">
-                <div class="flex justify-between items-start border-b border-gray-800 pb-4">
-                    <div class="flex items-center gap-3">
-                        <svg class="w-9 h-9" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- PDF Report Container Preview -->
+            <div id="pdfReportContainer" class="card hidden" style="border: 1px solid rgba(0, 242, 254, 0.4); margin-top: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <svg style="width: 36px; height: 36px;" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M12 2L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 2Z" fill="#00f2fe" stroke="#1d4ed8" stroke-width="1.5"/>
                             <path d="M8 12L10 14L14 9" stroke="#0a0f1d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                         <div>
-                            <h3 class="text-lg font-extrabold text-white tracking-wider">QTP STRAT<span class="text-neongold">IQ</span></h3>
-                            <p class="text-[10px] text-gray-400 uppercase tracking-widest">Executive Strategy Backtest & Performance Audit</p>
+                            <h3 style="font-size: 16px; font-weight: 800; color: #fff;">QTP STRAT<span style="color:var(--neongold)">IQ</span></h3>
+                            <p style="font-size: 9px; color: var(--text-muted); text-transform: uppercase;">Executive Strategy Backtest & Performance Audit</p>
                         </div>
                     </div>
-                    <div class="text-right">
-                        <p class="text-xs text-neoncyan font-mono" id="reportDate"></p>
-                        <p class="text-[10px] text-gray-500 uppercase">Hash: QTP-SECURE-AUDIT</p>
+                    <div style="text-align: right;">
+                        <div style="font-size: 11px; color: var(--neoncyan); font-family: monospace;" id="reportDate"></div>
+                        <div style="font-size: 9px; color: #6b7280; text-transform: uppercase;">Hash: QTP-SECURE-AUDIT</div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-                    <div class="bg-cardbg p-3 rounded-lg border border-gray-800">
-                        <p class="text-[10px] text-gray-400 uppercase">Win Rate</p>
-                        <p class="text-lg font-bold text-neoncyan" id="resWinRate">-</p>
-                    </div>
-                    <div class="bg-cardbg p-3 rounded-lg border border-gray-800">
-                        <p class="text-[10px] text-gray-400 uppercase">Profit Factor</p>
-                        <p class="text-lg font-bold text-neongold" id="resProfitFactor">-</p>
-                    </div>
-                    <div class="bg-cardbg p-3 rounded-lg border border-gray-800">
-                        <p class="text-[10px] text-gray-400 uppercase">Max Drawdown</p>
-                        <p class="text-lg font-bold text-red-400" id="resMaxDD">-</p>
-                    </div>
-                    <div class="bg-cardbg p-3 rounded-lg border border-gray-800">
-                        <p class="text-[10px] text-gray-400 uppercase">Net Return</p>
-                        <p class="text-lg font-bold text-green-400" id="resReturn">-</p>
-                    </div>
+                <div class="grid-4" style="text-align: center;">
+                    <div class="stat-box"><div class="stat-label">Win Rate</div><div class="stat-value text-cyan" id="resWinRate">-</div></div>
+                    <div class="stat-box"><div class="stat-label">Profit Factor</div><div class="stat-value" style="color:var(--neongold)" id="resProfitFactor">-</div></div>
+                    <div class="stat-box"><div class="stat-label">Max Drawdown</div><div class="stat-value text-red" id="resMaxDD">-</div></div>
+                    <div class="stat-box"><div class="stat-label">Net Return</div><div class="stat-value text-green" id="resReturn">-</div></div>
                 </div>
 
-                <div class="bg-cardbg p-4 rounded-lg border border-gray-800 flex justify-between items-center text-xs">
+                <div class="stat-box" style="display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
                     <div>
-                        <p class="text-gray-400 uppercase text-[10px]">Benchmark Comparison</p>
-                        <p class="font-bold text-white mt-0.5" id="resBenchmarkName">Gold (XAUUSD Buy & Hold)</p>
+                        <div style="color: var(--text-muted); font-size: 9px; text-transform: uppercase;">Benchmark Comparison</div>
+                        <div style="font-weight: bold; color: #fff; margin-top: 2px;" id="resBenchmarkName">-</div>
                     </div>
-                    <div class="text-right">
-                        <p class="text-gray-400 uppercase text-[10px]">Strategy Alpha Outperformance</p>
-                        <p class="font-bold text-green-400 mt-0.5">+28.4% Alpha</p>
+                    <div style="text-align: right;">
+                        <div style="color: var(--text-muted); font-size: 9px; text-transform: uppercase;">Alpha Outperformance</div>
+                        <div style="font-weight: bold; color: #4ade80; margin-top: 2px;">+28.4% Alpha</div>
                     </div>
                 </div>
 
-                <div class="text-[11px] text-gray-400 space-y-1 bg-cardbg p-4 rounded-lg border border-gray-800">
-                    <p><strong class="text-white">Strategy Profile:</strong> Institutional Multi-Timeframe Automation Suite</p>
-                    <p><strong class="text-white">Validation Status:</strong> Verified Engine Output & Structural Backtest Complete</p>
-                    <p><strong class="text-white">Copyright Notice:</strong> © 2026 QTP StratIQ. All rights reserved. Confidential institutional document.</p>
+                <div class="stat-box" style="font-size: 11px; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px;">
+                    <div><strong style="color:#fff;">Strategy Profile:</strong> Institutional Multi-Timeframe Automation Suite</div>
+                    <div><strong style="color:#fff;">Validation Status:</strong> Verified Engine Output & Structural Backtest Complete</div>
+                    <div><strong style="color:#fff;">Copyright Notice:</strong> © 2026 QTP StratIQ. All rights reserved. Confidential institutional document.</div>
                 </div>
 
-                <button onclick="window.print()" class="w-full py-3 bg-neoncyan text-black font-bold text-xs uppercase tracking-wider rounded-xl hover:opacity-90 transition cursor-pointer">
-                    🖨️ Export / Print Branded PDF Report
-                </button>
+                <button type="button" onclick="window.print()" class="btn-primary btn-full">🖨️ Export / Print Branded PDF Report</button>
             </div>
         </div>
+
     </div>
 
     <script>
+        // In-memory data store for live bots
         let mockBots = [
             { id: 'bot-1', name: 'QTP-SMC-XAUUSD-01', platform: 'MQL5', status: 'Active', lastPing: 'Just now', pnl: '+$920.00' },
             { id: 'bot-2', name: 'QTP-OB-GER40-02', platform: 'Pine v6', status: 'Active', lastPing: '1m ago', pnl: '+$500.50' }
@@ -292,6 +334,7 @@
 
         let generatedCodeStore = `// QTP StratIQ Verified Engine Output\n// Platform: MQL5\n// Methodology: Smart Money Concepts (SMC)\n// Risk Parameter: 1.0%\n\ninput double RiskPercent = 1.0;\ninput int SwingLookback = 10;\ninput bool SessionFilterEnabled = true;\n\nvoid OnTick() {\n    // Institutional execution logic initialized\n    // Monitoring market structure shifts & order block mitigation...\n}`;
 
+        // Handle Form Submission for Code Generation
         document.getElementById('proForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const platform = document.getElementById('targetPlatform').value.toUpperCase();
@@ -304,6 +347,7 @@
             openCodeModal();
         });
 
+        // Modal Controls
         function openCodeModal() {
             document.getElementById('modalOutput').textContent = generatedCodeStore;
             document.getElementById('codeModal').classList.remove('hidden');
@@ -321,50 +365,49 @@
             });
         }
 
+        // Render Telemetry & Kill Switches
         function renderTelemetry() {
             const botsContainer = document.getElementById('botsContainer');
-            botsContainer.innerHTML = '<p class="text-xs font-semibold text-gray-400 uppercase">Deployed System Instances & Kill Switches</p>';
+            // Keep header title, clear previous bot instances
+            botsContainer.innerHTML = '<div style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Deployed System Instances & Kill Switches</div>';
             
             let activeCount = 0;
             mockBots.forEach(bot => {
                 if (bot.status === 'Active') activeCount++;
                 const isPaused = bot.status === 'Paused';
-                const statusColor = isPaused ? 'text-red-400 bg-red-500/10 border-red-500/30' : 'text-green-400 bg-green-500/10 border-green-500/30';
+                const statusBadgeClass = isPaused ? 'badge badge-red' : 'badge badge-green';
                 const btnText = isPaused ? '▶ Resume' : '⏹ Kill Switch';
-                const btnClass = isPaused ? 'bg-green-600 hover:bg-green-500 text-black' : 'bg-red-600 hover:bg-red-500 text-white';
+                const btnKillClass = isPaused ? 'btn-kill paused' : 'btn-kill active';
 
-                const botCard = `
-                    <div class="bg-darkbg p-4 rounded-xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                const cardHTML = `
+                    <div class="bot-instance">
                         <div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs font-bold text-white">${bot.name}</span>
-                                <span class="px-2 py-0.5 bg-neoncyan/10 text-neoncyan text-[9px] font-semibold rounded border border-neoncyan/30">${bot.platform}</span>
-                                <span class="px-2 py-0.5 ${statusColor} text-[9px] font-semibold rounded border">${bot.status}</span>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 12px; font-weight: bold; color: #fff;">${bot.name}</span>
+                                <span class="badge badge-cyan">${bot.platform}</span>
+                                <span class="${statusBadgeClass}">${bot.status}</span>
                             </div>
-                            <p class="text-[11px] text-gray-400 mt-1">Last Ping: ${bot.lastPing}</p>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Last Ping: ${bot.lastPing}</div>
                         </div>
-                        <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                            <div class="text-right">
-                                <p class="text-xs font-bold text-green-400">${bot.pnl}</p>
-                            </div>
-                            <button onclick="toggleBot('${bot.id}')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${btnClass}">
-                                ${btnText}
-                            </button>
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div style="font-size: 12px; font-weight: bold; color: #4ade80;">${bot.pnl}</div>
+                            <button type="button" onclick="toggleBot('${bot.id}')" class="${btnKillClass}">${btnText}</button>
                         </div>
                     </div>
                 `;
-                botsContainer.innerHTML += botCard;
+                botsContainer.innerHTML += cardHTML;
             });
 
             document.getElementById('activeBotsCount').textContent = `${activeCount} / ${mockBots.length}`;
-            
+
+            // Trade Log
             document.getElementById('tradeLogBody').innerHTML = `
-                <tr class="hover:bg-gray-800/30 transition">
-                    <td class="p-3 font-mono text-gray-400">14:22:05</td>
-                    <td class="p-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-500/20 text-green-400">LONG</span></td>
-                    <td class="p-3 font-mono">2382.40</td>
-                    <td class="p-3 font-mono">2394.80</td>
-                    <td class="p-3 text-right font-bold text-green-400">+3.2R</td>
+                <tr>
+                    <td style="font-family: monospace; color: var(--text-muted);">14:22:05</td>
+                    <td><span class="badge badge-green">LONG</span></td>
+                    <td style="font-family: monospace;">2382.40</td>
+                    <td style="font-family: monospace;">2394.80</td>
+                    <td style="text-align: right; font-weight: bold; color: #4ade80;">+3.2R</td>
                 </tr>
             `;
         }
@@ -377,10 +420,7 @@
             }
         }
 
-        window.onload = function() {
-            renderTelemetry();
-        };
-
+        // Generate Report Handler
         function generateReport() {
             document.getElementById('resWinRate').textContent = document.getElementById('backtestWinRate').value + '%';
             document.getElementById('resProfitFactor').textContent = document.getElementById('backtestProfitFactor').value;
@@ -394,6 +434,11 @@
             document.getElementById('pdfReportContainer').classList.remove('hidden');
             document.getElementById('pdfReportContainer').scrollIntoView({ behavior: 'smooth' });
         }
+
+        // Initialize on load
+        window.onload = function() {
+            renderTelemetry();
+        };
     </script>
 </body>
 </html>

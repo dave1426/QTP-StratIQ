@@ -2,13 +2,11 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# In-memory storage for active bot telemetry
 active_bots_state = [
     {"id": "1", "name": "QTP SPECTATOR v4.2 (XAUUSD)", "platform": "MQL5", "status": "Active", "pnl": "+$840.00 (2.1R)", "lastPing": "Just now"},
     {"id": "2", "name": "QTP BREAKBIAS v3.3 (GER30)", "platform": "Pine v6", "status": "Active", "pnl": "+$580.50 (1.6R)", "lastPing": "45s ago"}
 ]
 
-# 1. Strategy Translation Endpoint
 @app.route('/api/translate', methods=['POST'])
 def translate_strategy():
     data = request.json
@@ -16,57 +14,62 @@ def translate_strategy():
     logic = data.get('logic', 'smc')
     risk = data.get('risk', '1.0')
     
+    # Generate custom logic snippets based on selected methodology
+    if logic == 'ob':
+        logic_title = "Order Block Mitigation"
+        pine_logic = "isOB = ta.crossover(close, ta.valuewhen(high == ta.highest(high, 10), high, 0))"
+    elif logic == 'sweep':
+        logic_title = "Liquidity Sweep"
+        pine_logic = "isSweep = (low < ta.lowest(low, 20)[1]) and (close > ta.lowest(low, 20)[1])"
+    elif logic == 'ema':
+        logic_title = "EMA Crossover"
+        pine_logic = "isEMA = ta.crossover(ta.ema(close, 9), ta.ema(close, 21))"
+    else:
+        logic_title = "Smart Money Concepts (SMC)"
+        pine_logic = "isBOS = ta.crossover(close, ta.highest(high, 10))"
+
     if platform == 'mql5':
         code = f"""//+------------------------------------------------------------------+
 //|                                              QTP_Auto_System.mq5 |
-//|                                  Copyright 2026, QTP StratIQ     |
-//|                                             https://www.mql5.com |
+//|                                  Methodology: {logic_title}        |
+//|                                             https://www.qtpsig.com |
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2026"
 #property link      "https://www.qtpsig.com"
 #property version   "1.00"
 
 input double RiskPercent = {risk};
-input string LogicType   = "{logic}";
+input string LogicModel  = "{logic_title}";
 
 int OnInit()
 {{
-   Print("QTP System Initialized: Risk ", RiskPercent, "%");
+   Print("QTP System Initialized: ", LogicModel, " | Risk: ", RiskPercent, "%");
    return(INIT_SUCCEEDED);
 }}
 """
     elif platform == 'webhook':
         code = f"""{{
   "event": "QTP_SIGNAL",
-  "logic": "{logic}",
+  "methodology": "{logic_title}",
   "risk_percent": {risk},
   "timestamp": "2026-08-15T00:00:00Z"
 }}"""
     else:
         code = f"""// @version=6
-strategy("QTP StratIQ System", overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value={risk})
+strategy("QTP StratIQ - {logic_title}", overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value={risk})
 
-logicType = input.string("{logic}", title="Methodology")
-swingLen  = input.int(10, title="Swing Period")
+// Methodology Engine: {logic_title}
+{pine_logic}
 
-isBOS = ta.crossover(close, ta.highest(high, swingLen))
-isCHoCH = ta.crossunder(close, ta.lowest(low, swingLen))
-
-if (isBOS)
-    strategy.entry("QTP Long", strategy.long)
-
-if (isCHoCH)
-    strategy.close("QTP Long")
+if (true)
+    strategy.entry("QTP Exec", strategy.long)
 """
 
     return jsonify({"generated_code": code})
 
-# 2. Webhook Endpoint for TradingView / MT5 Alerts
 @app.route('/api/webhook', methods=['POST'])
 def handle_webhook():
     incoming_data = request.json
-    print("Incoming Webhook Payload:", incoming_data)
-    
     bot_name = incoming_data.get('name', 'QTP System')
     pnl = incoming_data.get('pnl', '+$0.00')
     
@@ -77,7 +80,6 @@ def handle_webhook():
             
     return jsonify({"status": "success", "message": "Telemetry updated successfully"}), 200
 
-# 3. Telemetry Endpoint for Dashboard Monitoring
 @app.route('/api/telemetry', methods=['GET'])
 def get_telemetry():
     return jsonify({"bots": active_bots_state})

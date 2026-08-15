@@ -286,6 +286,17 @@
             }
         });
 
+        async function fetchLiveTelemetry() {
+            try {
+                const response = await fetch('/api/telemetry');
+                const data = await response.json();
+                console.log('Live telemetry synced:', data);
+            } catch (error) {
+                console.log('Telemetry waiting for backend sync...');
+            }
+        }
+        setInterval(fetchLiveTelemetry, 5000);
+
         function generateReport() {
             document.getElementById('resWinRate').textContent = document.getElementById('backtestWinRate').value + '%';
             document.getElementById('resProfitFactor').textContent = document.getElementById('backtestProfitFactor').value;

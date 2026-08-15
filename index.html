@@ -1,11 +1,12 @@
+
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QTP StratIQ | Institutional Automation Suite</title>
-    <!-- True Brand Logo Favicon Integration -->
-    <link rel="icon" type="image/png" href="logo.png">
+    <!-- Embedded Inline Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f2fe'><path d='M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3z'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -33,10 +34,22 @@
 <body class="bg-darkbg text-gray-100 min-h-screen antialiased">
     <div class="max-w-4xl mx-auto px-4 py-10 space-y-10">
         
-        <!-- Header Branding with Official Logo -->
+        <!-- Header Branding with Precision Neon Shield Logo -->
         <div class="text-center flex flex-col items-center justify-center space-y-3">
             <div class="flex items-center gap-3">
-                <img src="logo.png" alt="QTP Shield Logo" class="w-12 h-12 object-contain drop-shadow-[0_0_12px_rgba(0,242,254,0.5)]">
+                <svg class="w-12 h-12 drop-shadow-[0_0_12px_rgba(0,242,254,0.6)]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 2Z" fill="url(#shieldGrad)" stroke="#00f2fe" stroke-width="1.5" stroke-linejoin="round"/>
+                    <!-- Bull & Candlestick Stylized Elements -->
+                    <path d="M8 12L10 14L14 9" stroke="#0a0f1d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="11" y="9" width="1.5" height="4" fill="#00f2fe"/>
+                    <rect x="14" y="8" width="1.5" height="6" fill="#00f2fe"/>
+                    <defs>
+                        <linearGradient id="shieldGrad" x1="3" y1="2" x2="21" y2="23" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#00f2fe" stop-opacity="0.8"/>
+                            <stop offset="1" stop-color="#1d4ed8" stop-opacity="0.9"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
                 <h1 class="text-3xl font-extrabold tracking-wider bg-gradient-to-r from-neoncyan to-white bg-clip-text text-transparent">
                     QTP STRAT<span class="text-neongold">IQ</span>
                 </h1>
@@ -194,11 +207,14 @@
                 📊 Generate Branded Executive Report
             </button>
 
-            <!-- PDF Report Preview Box with Official Logo Header -->
+            <!-- PDF Report Preview Box -->
             <div id="pdfReportContainer" class="hidden bg-darkbg p-6 rounded-xl border border-neoncyan/40 space-y-6 mt-4">
                 <div class="flex justify-between items-start border-b border-gray-800 pb-4">
                     <div class="flex items-center gap-3">
-                        <img src="logo.png" alt="QTP Shield Logo" class="w-10 h-10 object-contain">
+                        <svg class="w-9 h-9" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 2Z" fill="#00f2fe" stroke="#1d4ed8" stroke-width="1.5"/>
+                            <path d="M8 12L10 14L14 9" stroke="#0a0f1d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
                         <div>
                             <h3 class="text-lg font-extrabold text-white tracking-wider">QTP STRAT<span class="text-neongold">IQ</span></h3>
                             <p class="text-[10px] text-gray-400 uppercase tracking-widest">Executive Strategy Backtest & Performance Audit</p>

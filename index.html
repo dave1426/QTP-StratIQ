@@ -54,9 +54,11 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Strategy Methodology</label>
-                    <select id="strategyType" onchange="toggleMethodologyInputs()" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
+                    <select id="strategyType" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
                         <option value="smc">Smart Money Concepts (SMC)</option>
-                        <option value="ema">EMA Crossover</option>
+                        <option value="ob">Order Block Mitigation</option>
+                        <option value="sweep">Liquidity Sweep</option>
+                        <option value="ema">EMA Trend Crossover</option>
                     </select>
                 </div>
             </div>
@@ -66,21 +68,10 @@
                     <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Risk %</label>
                     <input type="number" id="riskPercent" value="1.0" step="0.1" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
                 </div>
-                
-                <div id="smcInputs">
+                <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Swing Lookback</label>
                     <input type="number" id="swingPeriod" value="10" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
                 </div>
-
-                <div id="emaFastContainer" class="hidden">
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Fast EMA</label>
-                    <input type="number" id="fastMa" value="9" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
-                </div>
-                <div id="emaSlowContainer" class="hidden">
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Slow EMA</label>
-                    <input type="number" id="slowMa" value="21" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
-                </div>
-
                 <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Session Filter</label>
                     <select id="sessionFilter" class="w-full bg-darkbg border border-gray-700 rounded-xl p-3 text-white text-sm focus:border-neoncyan outline-none">
@@ -115,7 +106,6 @@
                 </span>
             </div>
 
-            <!-- Metrics Overview Cards -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div class="bg-darkbg p-3.5 rounded-xl border border-gray-800">
                     <p class="text-[10px] text-gray-400 uppercase tracking-wider">Active Bots</p>
@@ -135,7 +125,6 @@
                 </div>
             </div>
 
-            <!-- Active Bots Feed -->
             <div class="space-y-3">
                 <p class="text-xs font-semibold text-gray-400 uppercase">Deployed System Instances</p>
                 
@@ -159,7 +148,7 @@
                             <span class="text-xs font-bold text-white">QTP BREAKBIAS v3.3 (GER30)</span>
                             <span class="px-2 py-0.5 bg-neongold/10 text-neongold text-[9px] font-semibold rounded border border-neongold/30">Pine v6</span>
                         </div>
-                        <p class="text-[11px] text-gray-400 mt-1">London Open Breakout Model</p>
+                        <p class="text-[11px] text-gray-400 mt-1">London Open Order Block Mitigation</p>
                     </div>
                     <div class="text-right">
                         <p class="text-xs font-bold text-green-400">+$580.50 (1.6R)</p>
@@ -242,23 +231,6 @@
     </div>
 
     <script>
-        function toggleMethodologyInputs() {
-            const strategy = document.getElementById('strategyType').value;
-            const smcDiv = document.getElementById('smcInputs');
-            const fastDiv = document.getElementById('emaFastContainer');
-            const slowDiv = document.getElementById('emaSlowContainer');
-
-            if (strategy === 'ema') {
-                smcDiv.classList.add('hidden');
-                fastDiv.classList.remove('hidden');
-                slowDiv.classList.remove('hidden');
-            } else {
-                smcDiv.classList.remove('hidden');
-                fastDiv.classList.add('hidden');
-                slowDiv.classList.add('hidden');
-            }
-        }
-
         document.getElementById('proForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const payload = {
@@ -266,8 +238,6 @@
                 logic: document.getElementById('strategyType').value,
                 risk: document.getElementById('riskPercent').value,
                 swing: document.getElementById('swingPeriod').value,
-                fast: document.getElementById('fastMa').value,
-                slow: document.getElementById('slowMa').value,
                 session: document.getElementById('sessionFilter').value
             };
             

@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# Enhanced bot state with kill-switch status and trade logs
 active_bots_state = [
     {
         "id": "1", 
@@ -87,7 +86,7 @@ def handle_webhook():
     for bot in active_bots_state:
         if bot['name'] in bot_name or bot_name in bot['name']:
             if bot['status'] == 'Paused':
-                return jsonify({"status": "ignored", "message": "Bot is currently paused via kill switch"}), 200
+                return jsonify({"status": "ignored", "message": "Bot paused via kill switch"}), 200
             bot['pnl'] = pnl
             bot['lastPing'] = 'Just now'
             if trade:
@@ -95,7 +94,7 @@ def handle_webhook():
                 if len(bot['trades']) > 5:
                     bot['trades'].pop()
             
-    return jsonify({"status": "success", "message": "Telemetry updated successfully"}), 200
+    return jsonify({"status": "success", "message": "Telemetry updated"}), 200
 
 @app.route('/api/telemetry', methods=['GET'])
 def get_telemetry():

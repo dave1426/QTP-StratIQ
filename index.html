@@ -347,22 +347,24 @@
                                      `//|                                  Copyright 2026, QTP StratIQ     |\n` +
                                      `//+------------------------------------------------------------------+\n` +
                                      `#property copyright "Copyright 2026, QTP StratIQ"\n` +
-                                     `#property version   "4.20"\n` +
-                                     `#property strict\n\n` +
-                                     `input double InpRiskPercent     = ${risk};\n` +
-                                     `input int    InpSwingLookback  = ${swing};\n` +
-                                     `input bool   InpSessionFilter  = ${session === 'yes' ? 'true' : 'false'};\n` +
-                                     `input string InpStrategyModel   = "${logic.toUpperCase()}";\n\n` +
+                                     `#property link      "https://qtp-strat-iq.vercel.app"\n` +
+                                     `#property version   "4.20"\n\n` +
+                                     `input double InpRiskPercent     = ${risk};     // Risk Percentage per Trade\n` +
+                                     `input int    InpSwingLookback  = ${swing};    // Swing Point Lookback\n` +
+                                     `input bool   InpSessionFilter  = ${session === 'yes' ? 'true' : 'false'}; // London/NY Session Filter Only\n` +
+                                     `input string InpStrategyModel   = "${logic.toUpperCase()}";   // Execution Logic Model\n\n` +
                                      `datetime     g_last_bar_time   = 0;\n\n` +
                                      `int OnInit() {\n` +
                                      `   Print(">>> QTP StratIQ Engine Initialized Successfully.");\n` +
+                                     `   Print(">>> Target Strategy Model: ", InpStrategyModel);\n` +
                                      `   return(INIT_SUCCEEDED);\n` +
                                      `}\n\n` +
                                      `void OnTick() {\n` +
                                      `   if(!CheckNewBar()) return;\n` +
+                                     `   if(InpSessionFilter && !CheckSessionTime()) return;\n` +
                                      `   bool structure_shift = DetectMarketStructure();\n` +
                                      `   if(structure_shift) {\n` +
-                                     `      Print(">>> Institutional Market Structure Shift Detected.");\n` +
+                                     `      Print(">>> Institutional Market Structure Shift Detected. Evaluating Order...");\n` +
                                      `   }\n` +
                                      `}\n\n` +
                                      `bool CheckNewBar() {\n` +
@@ -373,24 +375,40 @@
                                      `   }\n` +
                                      `   return false;\n` +
                                      `}\n\n` +
+                                     `bool CheckSessionTime() {\n` +
+                                     `   MqlDateTime dt;\n` +
+                                     `   TimeToStruct(TimeCurrent(), dt);\n` +
+                                     `   if(dt.hour >= 7 && dt.hour <= 17) return true;\n` +
+                                     `   return false;\n` +
+                                     `}\n\n` +
                                      `bool DetectMarketStructure() {\n` +
-                                     `   double high_val = iHigh(_Symbol, _Period, iHighest(_Symbol, _Period, MODE_HIGH, InpSwingLookback, 1));\n` +
-                                     `   double low_val  = iLow(_Symbol, _Period, iLowest(_Symbol, _Period, MODE_LOW, InpSwingLookback, 1));\n` +
-                                     `   return (Close[1] > high_val || Close[1] < low_val);\n` +
+                                     `   double high_arr[];\n` +
+                                     `   double low_arr[];\n` +
+                                     `   double close_arr[];\n` +
+                                     `   ArraySetAsSeries(high_arr, true);\n` +
+                                     `   ArraySetAsSeries(low_arr, true);\n` +
+                                     `   ArraySetAsSeries(close_arr, true);\n` +
+                                     `   if(CopyHigh(_Symbol, _Period, 1, InpSwingLookback + 1, high_arr) <= 0) return false;\n` +
+                                     `   if(CopyLow(_Symbol, _Period, 1, InpSwingLookback + 1, low_arr) <= 0) return false;\n` +
+                                     `   if(CopyClose(_Symbol, _Period, 1, 2, close_arr) <= 0) return false;\n` +
+                                     `   int highest_index = ArrayMaximum(high_arr, 0, InpSwingLookback);\n` +
+                                     `   int lowest_index  = ArrayMinimum(low_arr, 0, InpSwingLookback);\n` +
+                                     `   if(highest_index == WRONG_VALUE || lowest_index == WRONG_VALUE) return false;\n` +
+                                     `   return (close_arr[0] > high_arr[highest_index] || close_arr[0] < low_arr[lowest_index]);\n` +
                                      `}`;
             } else if (platform === 'webhook') {
-                generatedCodeStore = `{\n` +
-                                     `  "system": "QTP StratIQ Automated Execution",\n` +
-                                     `  "version": "4.2",\n` +
-                                     `  "timestamp": "${new Date().toISOString()}",\n` +
-                                     `  "parameters": {\n` +
-                                     `    "methodology": "${logic.toUpperCase()}",\n` +
-                                     `    "risk_percent": ${risk},\n` +
-                                     `    "swing_lookback": ${swing},\n` +
-                                     `    "session_filter": ${session === 'yes'}\n` +
-                                     `  },\n` +
-                                     `  "action": "EVALUATE_BREAKOUT"\n` +
-                                     `}`;
+                generatedCodeStore = JSON.stringify({
+                    system: "QTP StratIQ Automated Execution",
+                    version: "4.2",
+                    timestamp: new Date().toISOString(),
+                    parameters: {
+                        methodology: logic.toUpperCase(),
+                        risk_percent: parseFloat(risk),
+                        swing_lookback: parseInt(swing),
+                        session_filter: session === 'yes'
+                    },
+                    action: "EVALUATE_BREAKOUT"
+                }, null, 2);
             } else {
                 generatedCodeStore = `// @version=6\n` +
                                      `strategy("QTP StratIQ Institutional Suite", overlay=true, initial_capital=10000, default_qty_value=${risk})\n\n` +

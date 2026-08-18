@@ -200,11 +200,11 @@
             <div class="grid-4">
                 <div class="stat-box">
                     <div class="stat-label">Active Bots</div>
-                    <div class="stat-value" id="activeBotsCount">2 / 2</div>
+                    <div class="stat-value" id="activeBotsCount">0 / 0</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-label">Today's P&L</div>
-                    <div class="stat-value text-green">+$1,420.50</div>
+                    <div class="stat-value text-green" id="totalPnlVal">+$1,420.50</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-label">Live Win Rate</div>
@@ -326,25 +326,105 @@
     </div>
 
     <script>
-        // In-memory data store for live bots
-        let mockBots = [
-            { id: 'bot-1', name: 'QTP-SMC-XAUUSD-01', platform: 'MQL5', status: 'Active', lastPing: 'Just now', pnl: '+$920.00' },
-            { id: 'bot-2', name: 'QTP-OB-GER40-02', platform: 'Pine v6', status: 'Active', lastPing: '1m ago', pnl: '+$500.50' }
-        ];
+        const API_BASE = 'http://127.0.0.1:5000';
+        let generatedCodeStore = '// QTP StratIQ Verified Engine Output\n// Pending compilation...';
 
-        let generatedCodeStore = `// QTP StratIQ Verified Engine Output\n// Platform: MQL5\n// Methodology: Smart Money Concepts (SMC)\n// Risk Parameter: 1.0%\n\ninput double RiskPercent = 1.0;\ninput int SwingLookback = 10;\ninput bool SessionFilterEnabled = true;\n\nvoid OnTick() {\n    // Institutional execution logic initialized\n    // Monitoring market structure shifts & order block mitigation...\n}`;
+        // 1. Fetch Telemetry and Render Bots from Flask Backend
+        async function fetchTelemetry() {
+            try {
+                const response = await fetch(`${API_BASE}/api/telemetry`);
+                const data = await response.json();
+                renderBots(data.bots);
+            } catch (err) {
+                console.error("Backend connection error:", err);
+            }
+        }
 
-        // Handle Form Submission for Code Generation
-        document.getElementById('proForm').addEventListener('submit', (e) => {
+        function renderBots(bots) {
+            const botsContainer = document.getElementById('botsContainer');
+            botsContainer.innerHTML = '<div style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Deployed System Instances & Kill Switches</div>';
+            
+            let activeCount = 0;
+            let tradeLogHtml = '';
+
+            bots.forEach(bot => {
+                if (bot.status === 'Active') activeCount++;
+                const isPaused = bot.status === 'Paused';
+                const statusBadgeClass = isPaused ? 'badge badge-red' : 'badge badge-green';
+                const btnText = isPaused ? '▶ Resume' : '⏹ Kill Switch';
+                const btnKillClass = isPaused ? 'btn-kill paused' : 'btn-kill active';
+
+                const cardHTML = `
+                    <div class="bot-instance">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 12px; font-weight: bold; color: #fff;">${bot.name}</span>
+                                <span class="badge badge-cyan">${bot.platform}</span>
+                                <span class="${statusBadgeClass}">${bot.status}</span>
+                            </div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Last Ping: ${bot.lastPing} | PnL: ${bot.pnl}</div>
+                        </div>
+                        <button type="button" onclick="toggleBot('${bot.id}')" class="${btnKillClass}">${btnText}</button>
+                    </div>
+                `;
+                botsContainer.innerHTML += cardHTML;
+
+                // Collect trade rows from backend objects
+                if (bot.trades && bot.trades.length > 0) {
+                    bot.trades.forEach(t => {
+                        tradeLogHtml += `
+                            <tr>
+                                <td style="font-family: monospace; color: var(--text-muted);">${t.time}</td>
+                                <td><span class="badge badge-green">${t.type}</span></td>
+                                <td style="font-family: monospace;">${t.entry}</td>
+                                <td style="font-family: monospace;">${t.exit}</td>
+                                <td style="text-align: right; font-weight: bold; color: #4ade80;">${t.r}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            });
+
+            document.getElementById('activeBotsCount').textContent = `${activeCount} / ${bots.length}`;
+            if (tradeLogHtml) {
+                document.getElementById('tradeLogBody').innerHTML = tradeLogHtml;
+            }
+        }
+
+        // 2. Toggle Bot State via Backend API
+        async function toggleBot(id) {
+            try {
+                await fetch(`${API_BASE}/api/bot/toggle`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id })
+                });
+                fetchTelemetry();
+            } catch (err) {
+                console.error("Failed to toggle bot:", err);
+            }
+        }
+
+        // 3. Handle Form Submission to Backend /api/translate
+        document.getElementById('proForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const platform = document.getElementById('targetPlatform').value.toUpperCase();
-            const methodology = document.getElementById('strategyType').value.toUpperCase();
+            const platform = document.getElementById('targetPlatform').value;
+            const logic = document.getElementById('strategyType').value;
             const risk = document.getElementById('riskPercent').value;
-            const swing = document.getElementById('swingPeriod').value;
-            
-            generatedCodeStore = `// QTP StratIQ Verified Engine Output\n// Platform: ${platform}\n// Methodology: ${methodology}\n// Risk Parameter: ${risk}%\n// Swing Lookback: ${swing}\n\ninput double RiskPercent = ${risk};\ninput int SwingLookback = ${swing};\n\nvoid OnTick() {\n    // Initializing institutional automation sequence...\n    // Target Platform compiled successfully.\n}`;
-            
-            openCodeModal();
+
+            try {
+                const response = await fetch(`${API_BASE}/api/translate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ platform, logic, risk })
+                });
+                const data = await response.json();
+                generatedCodeStore = data.generated_code;
+                openCodeModal();
+            } catch (err) {
+                console.error("Translation error:", err);
+                alert("Could not connect to Flask translation engine.");
+            }
         });
 
         // Modal Controls
@@ -365,61 +445,6 @@
             });
         }
 
-        // Render Telemetry & Kill Switches
-        function renderTelemetry() {
-            const botsContainer = document.getElementById('botsContainer');
-            // Keep header title, clear previous bot instances
-            botsContainer.innerHTML = '<div style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Deployed System Instances & Kill Switches</div>';
-            
-            let activeCount = 0;
-            mockBots.forEach(bot => {
-                if (bot.status === 'Active') activeCount++;
-                const isPaused = bot.status === 'Paused';
-                const statusBadgeClass = isPaused ? 'badge badge-red' : 'badge badge-green';
-                const btnText = isPaused ? '▶ Resume' : '⏹ Kill Switch';
-                const btnKillClass = isPaused ? 'btn-kill paused' : 'btn-kill active';
-
-                const cardHTML = `
-                    <div class="bot-instance">
-                        <div>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <span style="font-size: 12px; font-weight: bold; color: #fff;">${bot.name}</span>
-                                <span class="badge badge-cyan">${bot.platform}</span>
-                                <span class="${statusBadgeClass}">${bot.status}</span>
-                            </div>
-                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Last Ping: ${bot.lastPing}</div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 16px;">
-                            <div style="font-size: 12px; font-weight: bold; color: #4ade80;">${bot.pnl}</div>
-                            <button type="button" onclick="toggleBot('${bot.id}')" class="${btnKillClass}">${btnText}</button>
-                        </div>
-                    </div>
-                `;
-                botsContainer.innerHTML += cardHTML;
-            });
-
-            document.getElementById('activeBotsCount').textContent = `${activeCount} / ${mockBots.length}`;
-
-            // Trade Log
-            document.getElementById('tradeLogBody').innerHTML = `
-                <tr>
-                    <td style="font-family: monospace; color: var(--text-muted);">14:22:05</td>
-                    <td><span class="badge badge-green">LONG</span></td>
-                    <td style="font-family: monospace;">2382.40</td>
-                    <td style="font-family: monospace;">2394.80</td>
-                    <td style="text-align: right; font-weight: bold; color: #4ade80;">+3.2R</td>
-                </tr>
-            `;
-        }
-
-        function toggleBot(id) {
-            const bot = mockBots.find(b => b.id === id);
-            if (bot) {
-                bot.status = bot.status === 'Active' ? 'Paused' : 'Active';
-                renderTelemetry();
-            }
-        }
-
         // Generate Report Handler
         function generateReport() {
             document.getElementById('resWinRate').textContent = document.getElementById('backtestWinRate').value + '%';
@@ -435,9 +460,10 @@
             document.getElementById('pdfReportContainer').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Initialize on load
+        // Initialize on load and poll telemetry every 5 seconds
         window.onload = function() {
-            renderTelemetry();
+            fetchTelemetry();
+            setInterval(fetchTelemetry, 5000);
         };
     </script>
 </body>

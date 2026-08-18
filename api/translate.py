@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for frontend integration
 
 active_bots_state = [
     {
@@ -29,7 +31,7 @@ active_bots_state = [
 
 @app.route('/api/translate', methods=['POST'])
 def translate_strategy():
-    data = request.json
+    data = request.json or {}
     platform = data.get('platform', 'pine')
     logic = data.get('logic', 'smc')
     risk = data.get('risk', '1.0')
@@ -78,7 +80,7 @@ if (true)
 
 @app.route('/api/webhook', methods=['POST'])
 def handle_webhook():
-    incoming_data = request.json
+    incoming_data = request.json or {}
     bot_name = incoming_data.get('name', 'QTP System')
     pnl = incoming_data.get('pnl', '+$0.00')
     trade = incoming_data.get('trade', None)
@@ -102,13 +104,13 @@ def get_telemetry():
 
 @app.route('/api/bot/toggle', methods=['POST'])
 def toggle_bot():
-    data = request.json
+    data = request.json or {}
     bot_id = data.get('id')
     for bot in active_bots_state:
-        if bot['id'] == bot_id:
+        if bot['id'] == str(bot_id):
             bot['status'] = 'Paused' if bot['status'] == 'Active' else 'Active'
             return jsonify({"status": "success", "bot": bot})
     return jsonify({"error": "Bot not found"}), 404
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5000)

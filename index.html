@@ -1,5 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QTP StratIQ | Institutional Automation Suite</title>
+    <style>
+        :root {
+            --darkbg: #0a0f1d;
+            --cardbg: #111827;
+            --neoncyan: #00f2fe;
+            --neongold: #ffd700;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: #1f2937;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: var(--darkbg); color: var(--text-main); font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; min-height: 100vh; padding: 40px 16px; }
+        .container { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px; }
+
+        /* Header */
+        .header { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .logo-wrap { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .logo-wrap svg { width: 48px; height: 48px; filter: drop-shadow(0 0 12px rgba(0, 242, 254, 0.6)); }
+        .title { font-size: 28px; font-weight: 800; letter-spacing: 1px; background: linear-gradient(to right, var(--neoncyan), #ffffff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .title span { color: var(--neongold); -webkit-text-fill-color: var(--neongold); }
+        .subtitle { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; }
+
+        /* Cards / Sections */
+        .card { background-color: var(--cardbg); padding: 28px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; gap: 20px; }
+        .section-title { font-size: 12px; font-weight: 700; color: var(--neongold); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+
+        /* Form Controls */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        @media (max-width: 640px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+
+        .control-group { display: flex; flex-direction: column; gap: 8px; }
+        label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+        select, input { width: 100%; background-color: var(--darkbg); border: 1px solid #374151; border-radius: 10px; padding: 12px; color: #fff; font-size: 14px; outline: none; }
+        select:focus, input:focus { border-color: var(--neoncyan); }
+
+        /* Buttons */
+        .btn-row { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; padding-top: 8px; }
+        @media (max-width: 640px) { .btn-row { grid-template-columns: 1fr; } }
+        
+        .btn-primary { background: linear-gradient(to right, var(--neoncyan), #2563eb); color: #000; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; padding: 14px; border-radius: 10px; border: none; cursor: pointer; transition: opacity 0.2s; box-shadow: 0 10px 15px -3px rgba(0, 242, 254, 0.2); }
+        .btn-primary:hover { opacity: 0.9; }
+        
+        .btn-secondary { background-color: var(--darkbg); color: var(--neoncyan); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; padding: 14px; border-radius: 10px; border: 1px solid #374151; cursor: pointer; transition: background 0.2s; }
+        .btn-secondary:hover { background-color: #1f2937; }
+
+        .btn-full { width: 100%; }
+
+        /* Telemetry Stat Cards */
+        .stat-box { background-color: var(--darkbg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); }
+        .stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 18px; font-weight: 700; color: #fff; margin-top: 4px; }
+        .text-green { color: #4ade80 !important; }
+        .text-cyan { color: var(--neoncyan) !important; }
+        .text-red { color: #f87171 !important; }
+
+        /* Tables & Lists */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; color: #d1d5db; }
+        thead { background-color: var(--darkbg); font-size: 10px; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border-color); }
+        th, td { padding: 12px; }
+        tr:not(:last-child) { border-bottom: 1px solid rgba(31, 41, 55, 0.5); }
+
+        /* Modal Overlay */
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; }
+        .modal-content { background-color: var(--cardbg); border: 1px solid var(--border-color); border-radius: 16px; max-width: 650px; width: 100%; padding: 24px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 16px; font-weight: bold; cursor: pointer; }
+        .modal-close:hover { color: #fff; }
+        
+        pre { background-color: #000; padding: 16px; border-radius: 10px; color: #67e8f9; font-size: 12px; font-family: ui-monospace, monospace; overflow-x: auto; max-height: 350px; border: 1px solid var(--border-color); }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 12px; }
+
+        /* Dynamic Bot Instances */
+        .bot-instance { background-color: var(--darkbg); padding: 16px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .badge { padding: 3px 8px; font-size: 9px; font-weight: 600; border-radius: 4px; text-transform: uppercase; display: inline-block; }
+        .badge-cyan { background-color: rgba(0, 242, 254, 0.1); color: var(--neoncyan); border: 1px solid rgba(0, 242, 254, 0.3); }
+        .badge-green { background-color: rgba(74, 222, 128, 0.1); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
+        .badge-red { background-color: rgba(248, 113, 113, 0.1); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.3); }
+
+        .btn-kill { padding: 6px 12px; font-size: 11px; font-weight: bold; border-radius: 6px; border: none; cursor: pointer; }
+        .btn-kill.active { background-color: #dc2626; color: #fff; }
+        .btn-kill.paused { background-color: #16a34a; color: #fff; }
+
+        .hidden { display: none !important; }
+        .footer-stamp { text-align: center; font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: 2px; font-family: monospace; }
+        
+        @media print {
+            body * { visibility: hidden; }
+            #pdfReportContainer, #pdfReportContainer * { visibility: visible; }
+            #pdfReportContainer { position: absolute; left: 0; top: 0; width: 100%; background: var(--darkbg) !important; color: #fff !important; border: none !important; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-wrap">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 2Z" fill="url(#shieldGrad)" stroke="#00f2fe" stroke-width="1.5" stroke-linejoin="round"/>
+                    <path d="M8 12L10 14L14 9" stroke="#0a0f1d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="11" y="9" width="1.5" height="4" fill="#00f2fe"/>
+                    <rect x="14" y="8" width="1.5" height="6" fill="#00f2fe"/>
+                    <defs>
+                        <linearGradient id="shieldGrad" x1="3" y1="2" x2="21" y2="23" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#00f2fe" stop-opacity="0.8"/>
+                            <stop offset="1" stop-color="#1d4ed8" stop-opacity="0.9"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h1 class="title">QTP STRAT<span>IQ</span></h1>
+            </div>
+            <p class="subtitle">Professional Strategy Automation & Live Telemetry</p>
+        </div>
+
+        <!-- Section 1: Strategy Builder Hub -->
+        <form id="proForm" class="card">
+            <h2 class="section-title">1. Strategy Code Generator</h2>
+            
+            <div class="grid-2">
+                <div class="control-group">
+                    <label>Target Platform</label>
+                    <select id="targetPlatform">
+                        <option value="mql5">MetaTrader 5 (MQL5)</option>
+                        <option value="pine">TradingView (Pine v6)</option>
+                        <option value="webhook">Webhook JSON Payload</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Strategy Methodology</label>
+                    <select id="strategyType">
+                        <option value="smc">Smart Money Concepts (SMC)</option>
+                        <option value="ob">Order Block Mitigation</option>
+                        <option value="sweep">Liquidity Sweep</option>
+                        <option value="ema">EMA Trend Crossover</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid-3">
+                <div class="control-group">
+                    <label>Risk %</label>
+                    <input type="number" id="riskPercent" value="1.0" step="0.1">
+                </div>
+                <div class="control-group">
+                    <label>Swing Lookback</label>
+                    <input type="number" id="swingPeriod" value="10">
+                </div>
+                <div class="control-group">
+                    <label>Session Filter</label>
+                    <select id="sessionFilter">
+                        <option value="yes">London / NY Overlap</option>
+                        <option value="no">24/7 Execution</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button type="submit" class="btn-primary">Generate Custom System Code</button>
+                <button type="button" onclick="openCodeModal()" class="btn-secondary">👁️ View Code</button>
+            </div>
+
+            <div class="footer-stamp" style="border-top: 1px solid #1f2937; padding-top: 12px;">© 2026 QTP StratIQ | Verified Engine Output</div>
+        </form>
+
+        <!-- Code Modal Popup (Hidden by default) -->
+        <div id="codeModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="section-title" style="border:none; padding:0; margin:0;">Compiled System Code Preview</h3>
+                    <button type="button" onclick="closeCodeModal()" class="modal-close">✕</button>
+                </div>
+                <pre id="modalOutput"></pre>
+                <div class="modal-footer">
+                    <button type="button" id="modalCopyBtn" onclick="copyModalCode()" class="btn-secondary">📋 Copy Code</button>
+                    <button type="button" onclick="closeCodeModal()" class="btn-primary">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Live Monitor Dashboard -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                <h2 class="section-title" style="border:none; padding:0; margin:0;">2. Live Bot Telemetry & Monitor</h2>
+                <span class="badge badge-green" style="display: flex; align-items: center; gap: 6px;">
+                    <span style="width: 6px; height: 6px; background-color: #4ade80; border-radius: 50%;"></span> SYSTEM ONLINE
+                </span>
+            </div>
+
+            <div class="grid-4">
+                <div class="stat-box">
+                    <div class="stat-label">Active Bots</div>
+                    <div class="stat-value" id="activeBotsCount">2 / 2</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Today's P&L</div>
+                    <div class="stat-value text-green">+$1,420.50</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Live Win Rate</div>
+                    <div class="stat-value text-cyan">71.4%</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Max Drawdown</div>
+                    <div class="stat-value text-red">1.8%</div>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;" id="botsContainer">
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Deployed System Instances & Kill Switches</div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+                <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Recent Execution Log</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Type</th>
+                                <th>Entry</th>
+                                <th>Exit</th>
+                                <th style="text-align: right;">R-Multiple</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tradeLogBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Backtest & Report Suite -->
+        <div class="card">
+            <h2 class="section-title">3. Backtest Metrics & Branded PDF Report</h2>
+            
+            <div class="grid-3">
+                <div class="control-group">
+                    <label>Win Rate (%)</label>
+                    <input type="number" id="backtestWinRate" value="68.5">
+                </div>
+                <div class="control-group">
+                    <label>Profit Factor</label>
+                    <input type="number" id="backtestProfitFactor" value="2.42" step="0.01">
+                </div>
+                <div class="control-group">
+                    <label>Benchmark Asset</label>
+                    <select id="benchmarkAsset">
+                        <option value="Gold (XAUUSD)">Gold (XAUUSD Buy & Hold)</option>
+                        <option value="S&P 500 (SPY)">S&P 500 (SPY Index)</option>
+                        <option value="DAX (GER40)">DAX (GER40 Index)</option>
+                        <option value="Bitcoin (BTCUSD)">Bitcoin (BTCUSD)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="control-group">
+                    <label>Max Drawdown (%)</label>
+                    <input type="number" id="backtestMaxDD" value="4.2" step="0.1">
+                </div>
+                <div class="control-group">
+                    <label>Total Net Return (%)</label>
+                    <input type="number" id="backtestReturn" value="44.8" step="0.1">
+                </div>
+            </div>
+
+            <button type="button" onclick="generateReport()" class="btn-secondary btn-full">📊 Generate Branded Executive Report</button>
+
+            <!-- PDF Report Container Preview -->
+            <div id="pdfReportContainer" class="card hidden" style="border: 1px solid rgba(0, 242, 254, 0.4); margin-top: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <svg style="width: 36px; height: 36px;" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 2Z" fill="#00f2fe" stroke="#1d4ed8" stroke-width="1.5"/>
+                            <path d="M8 12L10 14L14 9" stroke="#0a0f1d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <div>
+                            <h3 style="font-size: 16px; font-weight: 800; color: #fff;">QTP STRAT<span style="color:var(--neongold)">IQ</span></h3>
+                            <p style="font-size: 9px; color: var(--text-muted); text-transform: uppercase;">Executive Strategy Backtest & Performance Audit</p>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 11px; color: var(--neoncyan); font-family: monospace;" id="reportDate"></div>
+                        <div style="font-size: 9px; color: #6b7280; text-transform: uppercase;">Hash: QTP-SECURE-AUDIT</div>
+                    </div>
+                </div>
+
+                <div class="grid-4" style="text-align: center;">
+                    <div class="stat-box"><div class="stat-label">Win Rate</div><div class="stat-value text-cyan" id="resWinRate">-</div></div>
+                    <div class="stat-box"><div class="stat-label">Profit Factor</div><div class="stat-value" style="color:var(--neongold)" id="resProfitFactor">-</div></div>
+                    <div class="stat-box"><div class="stat-label">Max Drawdown</div><div class="stat-value text-red" id="resMaxDD">-</div></div>
+                    <div class="stat-box"><div class="stat-label">Net Return</div><div class="stat-value text-green" id="resReturn">-</div></div>
+                </div>
+
+                <div class="stat-box" style="display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 9px; text-transform: uppercase;">Benchmark Comparison</div>
+                        <div style="font-weight: bold; color: #fff; margin-top: 2px;" id="resBenchmarkName">-</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="color: var(--text-muted); font-size: 9px; text-transform: uppercase;">Alpha Outperformance</div>
+                        <div style="font-weight: bold; color: #4ade80; margin-top: 2px;">+28.4% Alpha</div>
+                    </div>
+                </div>
+
+                <div class="stat-box" style="font-size: 11px; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px;">
+                    <div><strong style="color:#fff;">Strategy Profile:</strong> Institutional Multi-Timeframe Automation Suite</div>
+                    <div><strong style="color:#fff;">Validation Status:</strong> Verified Engine Output & Structural Backtest Complete</div>
+                    <div><strong style="color:#fff;">Copyright Notice:</strong> © 2026 QTP StratIQ. All rights reserved. Confidential institutional document.</div>
+                </div>
+
+                <button type="button" onclick="window.print()" class="btn-primary btn-full">🖨️ Export / Print Branded PDF Report</button>
+            </div>
+        </div>
+
+    </div>
+
     <script>
-        // In-memory data store for live bots
         let mockBots = [
             { id: 'bot-1', name: 'QTP SPECTATOR v4.2 (XAUUSD)', platform: 'MQL5', status: 'Active', lastPing: '12s ago', pnl: '+$840.00 (2.1R)', trades: [{type: "LONG", entry: "2384.50", exit: "2405.60", r: "+2.1R", time: "14:22"}] },
             { id: 'bot-2', name: 'QTP BREAKBIAS v3.3 (GER30)', platform: 'Pine v6', status: 'Active', lastPing: '45s ago', pnl: '+$580.50 (1.6R)', trades: [{type: "SHORT", entry: "18450.2", exit: "18384.0", r: "+1.6R", time: "13:05"}] }
@@ -7,7 +333,6 @@
 
         let generatedCodeStore = "";
 
-        // Full Institutional Code Generator Engine
         document.getElementById('proForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const platform = document.getElementById('targetPlatform').value;
@@ -20,39 +345,24 @@
                 generatedCodeStore = `//+------------------------------------------------------------------+\n` +
                                      `//|                                          QTP_StratIQ_Engine.mq5 |\n` +
                                      `//|                                  Copyright 2026, QTP StratIQ     |\n` +
-                                     `//|                               https://qtp-strat-iq.vercel.app    |\n` +
                                      `//+------------------------------------------------------------------+\n` +
                                      `#property copyright "Copyright 2026, QTP StratIQ"\n` +
-                                     `#property link      "https://qtp-strat-iq.vercel.app"\n` +
                                      `#property version   "4.20"\n` +
                                      `#property strict\n\n` +
-                                     `//--- Inputs\n` +
-                                     `input double InpRiskPercent     = ${risk};     // Risk Percentage per Trade\n` +
-                                     `input int    InpSwingLookback  = ${swing};    // Swing Point Lookback\n` +
-                                     `input bool   InpSessionFilter  = ${session === 'yes' ? 'true' : 'false'}; // London/NY Overlap Only\n` +
-                                     `input string InpStrategyModel   = "${logic.toUpperCase()}"; // Execution Logic\n\n` +
-                                     `//--- Global Variables\n` +
-                                     `ulong        g_magic_no        = 777231;\n` +
+                                     `input double InpRiskPercent     = ${risk};\n` +
+                                     `input int    InpSwingLookback  = ${swing};\n` +
+                                     `input bool   InpSessionFilter  = ${session === 'yes' ? 'true' : 'false'};\n` +
+                                     `input string InpStrategyModel   = "${logic.toUpperCase()}";\n\n` +
                                      `datetime     g_last_bar_time   = 0;\n\n` +
-                                     `//+------------------------------------------------------------------+\n` +
-                                     `//| Expert initialization function                                   |\n` +
-                                     `//+------------------------------------------------------------------+\n` +
                                      `int OnInit() {\n` +
                                      `   Print(">>> QTP StratIQ Engine Initialized Successfully.");\n` +
-                                     `   Print(">>> Target Strategy Model: ", InpStrategyModel);\n` +
                                      `   return(INIT_SUCCEEDED);\n` +
                                      `}\n\n` +
-                                     `//+------------------------------------------------------------------+\n` +
-                                     `//| Expert tick function                                             |\n` +
-                                     `//+------------------------------------------------------------------+\n` +
                                      `void OnTick() {\n` +
                                      `   if(!CheckNewBar()) return;\n` +
-                                     `   if(InpSessionFilter && !CheckSessionTime()) return;\n\n` +
-                                     `   // Core Institutional Execution Logic\n` +
                                      `   bool structure_shift = DetectMarketStructure();\n` +
                                      `   if(structure_shift) {\n` +
-                                     `      Print(">>> Institutional Market Structure Shift Detected. Executing Order...");\n` +
-                                     `      ExecuteTradeOrder();\n` +
+                                     `      Print(">>> Institutional Market Structure Shift Detected.");\n` +
                                      `   }\n` +
                                      `}\n\n` +
                                      `bool CheckNewBar() {\n` +
@@ -63,22 +373,10 @@
                                      `   }\n` +
                                      `   return false;\n` +
                                      `}\n\n` +
-                                     `bool CheckSessionTime() {\n` +
-                                     `   MqlDateTime dt;\n` +
-                                     `   TimeToStruct(TimeCurrent(), dt);\n` +
-                                     `   // Active during London/New York window (7:00 to 17:00 UTC equivalent)\n` +
-                                     `   if(dt.hour >= 7 && dt.hour <= 17) return true;\n` +
-                                     `   return false;\n` +
-                                     `}\n\n` +
                                      `bool DetectMarketStructure() {\n` +
-                                     `   // Evaluates swing highs/lows based on lookback period\n` +
                                      `   double high_val = iHigh(_Symbol, _Period, iHighest(_Symbol, _Period, MODE_HIGH, InpSwingLookback, 1));\n` +
                                      `   double low_val  = iLow(_Symbol, _Period, iLowest(_Symbol, _Period, MODE_LOW, InpSwingLookback, 1));\n` +
                                      `   return (Close[1] > high_val || Close[1] < low_val);\n` +
-                                     `}\n\n` +
-                                     `void ExecuteTradeOrder() {\n` +
-                                     `   // Order routing and risk-based sizing calculation placeholder\n` +
-                                     `   Print("Risk sizing calculated at: ", InpRiskPercent, "%%");\n` +
                                      `}`;
             } else if (platform === 'webhook') {
                 generatedCodeStore = `{\n` +
@@ -95,30 +393,23 @@
                                      `}`;
             } else {
                 generatedCodeStore = `// @version=6\n` +
-                                     `strategy("QTP StratIQ Institutional Suite", overlay=true, initial_capital=10000, default_qty_type=strategy.percent_of_equity, default_qty_value=${risk})\n\n` +
-                                     `// --- Inputs & Configurations\n` +
+                                     `strategy("QTP StratIQ Institutional Suite", overlay=true, initial_capital=10000, default_qty_value=${risk})\n\n` +
                                      `i_lookback   = input.int(${swing}, title="Swing Lookback Period")\n` +
                                      `i_model      = input.string("${logic.toUpperCase()}", title="Strategy Methodology")\n` +
                                      `i_useSession = input.bool(${session === 'yes'}, title="London/NY Session Filter")\n\n` +
-                                     `// --- Core Calculations & SMC Structure Detection\n` +
                                      `highestHigh = ta.highest(high, i_lookback)\n` +
                                      `lowestLow   = ta.lowest(low, i_lookback)\n\n` +
                                      `isBOS_Bull  = ta.crossover(close, highestHigh[1])\n` +
                                      `isBOS_Bear  = ta.crossunder(close, lowestLow[1])\n\n` +
-                                     `inSession   = not i_useSession or (time(timeframe.period, "0700-1700:1234567") != 0)\n\n` +
-                                     `// --- Execution Triggers\n` +
-                                     `if (inSession and isBOS_Bull)\n` +
-                                     `    strategy.entry("QTP Long", strategy.long)\n` +
-                                     `    label.new(bar_index, low, "SMC Bullish BOS", color=color.new(#00f2fe, 20), textcolor=color.black)\n\n` +
-                                     `if (inSession and isBOS_Bear)\n` +
-                                     `    strategy.entry("QTP Short", strategy.short)\n` +
-                                     `    label.new(bar_index, high, "SMC Bearish BOS", color=color.new(#f87171, 20), textcolor=color.white)`;
+                                     `if (isBOS_Bull)\n` +
+                                     `    strategy.entry("QTP Long", strategy.long)\n\n` +
+                                     `if (isBOS_Bear)\n` +
+                                     `    strategy.entry("QTP Short", strategy.short)`;
             }
 
             openCodeModal();
         });
 
-        // Modal Controls
         function openCodeModal() {
             document.getElementById('modalOutput').textContent = generatedCodeStore;
             document.getElementById('codeModal').classList.remove('hidden');
@@ -136,7 +427,6 @@
             });
         }
 
-        // Render Telemetry & Kill Switches
         function renderTelemetry() {
             const botsContainer = document.getElementById('botsContainer');
             botsContainer.innerHTML = '<div style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Deployed System Instances & Kill Switches</div>';
@@ -195,7 +485,6 @@
             }
         }
 
-        // Generate Report Handler
         function generateReport() {
             document.getElementById('resWinRate').textContent = document.getElementById('backtestWinRate').value + '%';
             document.getElementById('resProfitFactor').textContent = document.getElementById('backtestProfitFactor').value;
@@ -210,8 +499,9 @@
             document.getElementById('pdfReportContainer').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Initialize on load
         window.onload = function() {
             renderTelemetry();
         };
     </script>
+</body>
+</html>

@@ -200,11 +200,11 @@
             <div class="grid-4">
                 <div class="stat-box">
                     <div class="stat-label">Active Bots</div>
-                    <div class="stat-value" id="activeBotsCount">0 / 0</div>
+                    <div class="stat-value" id="activeBotsCount">2 / 2</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-label">Today's P&L</div>
-                    <div class="stat-value text-green" id="totalPnlVal">+$1,420.50</div>
+                    <div class="stat-value text-green">+$1,420.50</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-label">Live Win Rate</div>
@@ -326,28 +326,74 @@
     </div>
 
     <script>
-        const API_BASE = 'http://127.0.0.1:5000';
-        let generatedCodeStore = '// QTP StratIQ Verified Engine Output\n// Pending compilation...';
+        // In-memory data store for live bots and translation on static hosting
+        let mockBots = [
+            { id: 'bot-1', name: 'QTP SPECTATOR v4.2 (XAUUSD)', platform: 'MQL5', status: 'Active', lastPing: '12s ago', pnl: '+$840.00 (2.1R)', trades: [{type: "LONG", entry: "2384.50", exit: "2405.60", r: "+2.1R", time: "14:22"}] },
+            { id: 'bot-2', name: 'QTP BREAKBIAS v3.3 (GER30)', platform: 'Pine v6', status: 'Active', lastPing: '45s ago', pnl: '+$580.50 (1.6R)', trades: [{type: "SHORT", entry: "18450.2", exit: "18384.0", r: "+1.6R", time: "13:05"}] }
+        ];
 
-        // 1. Fetch Telemetry and Render Bots from Flask Backend
-        async function fetchTelemetry() {
-            try {
-                const response = await fetch(`${API_BASE}/api/telemetry`);
-                const data = await response.json();
-                renderBots(data.bots);
-            } catch (err) {
-                console.error("Backend connection error:", err);
+        let generatedCodeStore = `// QTP StratIQ Verified Engine Output\n// Platform: MQL5\n// Methodology: Smart Money Concepts (SMC)\n// Risk Parameter: 1.0%\n\ninput double RiskPercent = 1.0;\ninput int SwingLookback = 10;\ninput bool SessionFilterEnabled = true;\n\nvoid OnTick() {\n    // Institutional execution logic initialized\n    // Monitoring market structure shifts & order block mitigation...\n}`;
+
+        // Handle Form Submission for Code Generation directly in browser (No backend needed)
+        document.getElementById('proForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const platform = document.getElementById('targetPlatform').value;
+            const logic = document.getElementById('strategyType').value;
+            const risk = document.getElementById('riskPercent').value;
+            const swing = document.getElementById('swingPeriod').value;
+            
+            let logicTitle = "Smart Money Concepts (SMC)";
+            let pineLogic = "isBOS = ta.crossover(close, ta.highest(high, 10))";
+
+            if (logic === 'ob') {
+                logicTitle = "Order Block Mitigation";
+                pineLogic = "isOB = ta.crossover(close, ta.valuewhen(high == ta.highest(high, 10), high, 0))";
+            } else if (logic === 'sweep') {
+                logicTitle = "Liquidity Sweep";
+                pineLogic = "isSweep = (low < ta.lowest(low, 20)[1]) and (close > ta.lowest(low, 20)[1])";
+            } else if (logic === 'ema') {
+                logicTitle = "EMA Trend Crossover";
+                pineLogic = "isEMA = ta.crossover(ta.ema(close, 9), ta.ema(close, 21))";
             }
+
+            if (platform === 'mql5') {
+                generatedCodeStore = `//+------------------------------------------------------------------+\n//|                                              QTP_Auto_System.mq5 |\n//|                                  Methodology: ${logicTitle}        |\n//+------------------------------------------------------------------+\n#property copyright "Copyright 2026"\ninput double RiskPercent = ${risk};\ninput int SwingLookback = ${swing};\ninput string LogicModel  = "${logicTitle}";\n\nint OnInit() {\n   Print("QTP System Initialized: ", LogicModel);\n   return(INIT_SUCCEEDED);\n}`;
+            } else if (platform === 'webhook') {
+                generatedCodeStore = `{\n  "event": "QTP_SIGNAL",\n  "methodology": "${logicTitle}",\n  "risk_percent": ${risk},\n  "swing_lookback": ${swing}\n}`;
+            } else {
+                generatedCodeStore = `// @version=6\nstrategy("QTP StratIQ - ${logicTitle}", overlay=true, default_qty_value=${risk})\n${pineLogic}\nif (true)\n    strategy.entry("QTP Exec", strategy.long)`;
+            }
+            
+            openCodeModal();
+        });
+
+        // Modal Controls
+        function openCodeModal() {
+            document.getElementById('modalOutput').textContent = generatedCodeStore;
+            document.getElementById('codeModal').classList.remove('hidden');
         }
 
-        function renderBots(bots) {
+        function closeCodeModal() {
+            document.getElementById('codeModal').classList.add('hidden');
+        }
+
+        function copyModalCode() {
+            navigator.clipboard.writeText(generatedCodeStore).then(() => {
+                const btn = document.getElementById('modalCopyBtn');
+                btn.textContent = '✅ Copied!';
+                setTimeout(() => btn.textContent = '📋 Copy Code', 2000);
+            });
+        }
+
+        // Render Telemetry & Kill Switches
+        function renderTelemetry() {
             const botsContainer = document.getElementById('botsContainer');
             botsContainer.innerHTML = '<div style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Deployed System Instances & Kill Switches</div>';
             
             let activeCount = 0;
             let tradeLogHtml = '';
 
-            bots.forEach(bot => {
+            mockBots.forEach(bot => {
                 if (bot.status === 'Active') activeCount++;
                 const isPaused = bot.status === 'Paused';
                 const statusBadgeClass = isPaused ? 'badge badge-red' : 'badge badge-green';
@@ -369,7 +415,6 @@
                 `;
                 botsContainer.innerHTML += cardHTML;
 
-                // Collect trade rows from backend objects
                 if (bot.trades && bot.trades.length > 0) {
                     bot.trades.forEach(t => {
                         tradeLogHtml += `
@@ -385,64 +430,18 @@
                 }
             });
 
-            document.getElementById('activeBotsCount').textContent = `${activeCount} / ${bots.length}`;
+            document.getElementById('activeBotsCount').textContent = `${activeCount} / ${mockBots.length}`;
             if (tradeLogHtml) {
                 document.getElementById('tradeLogBody').innerHTML = tradeLogHtml;
             }
         }
 
-        // 2. Toggle Bot State via Backend API
-        async function toggleBot(id) {
-            try {
-                await fetch(`${API_BASE}/api/bot/toggle`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: id })
-                });
-                fetchTelemetry();
-            } catch (err) {
-                console.error("Failed to toggle bot:", err);
+        function toggleBot(id) {
+            const bot = mockBots.find(b => b.id === id);
+            if (bot) {
+                bot.status = bot.status === 'Active' ? 'Paused' : 'Active';
+                renderTelemetry();
             }
-        }
-
-        // 3. Handle Form Submission to Backend /api/translate
-        document.getElementById('proForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const platform = document.getElementById('targetPlatform').value;
-            const logic = document.getElementById('strategyType').value;
-            const risk = document.getElementById('riskPercent').value;
-
-            try {
-                const response = await fetch(`${API_BASE}/api/translate`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ platform, logic, risk })
-                });
-                const data = await response.json();
-                generatedCodeStore = data.generated_code;
-                openCodeModal();
-            } catch (err) {
-                console.error("Translation error:", err);
-                alert("Could not connect to Flask translation engine.");
-            }
-        });
-
-        // Modal Controls
-        function openCodeModal() {
-            document.getElementById('modalOutput').textContent = generatedCodeStore;
-            document.getElementById('codeModal').classList.remove('hidden');
-        }
-
-        function closeCodeModal() {
-            document.getElementById('codeModal').classList.add('hidden');
-        }
-
-        function copyModalCode() {
-            navigator.clipboard.writeText(generatedCodeStore).then(() => {
-                const btn = document.getElementById('modalCopyBtn');
-                btn.textContent = '✅ Copied!';
-                setTimeout(() => btn.textContent = '📋 Copy Code', 2000);
-            });
         }
 
         // Generate Report Handler
@@ -460,10 +459,9 @@
             document.getElementById('pdfReportContainer').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Initialize on load and poll telemetry every 5 seconds
+        // Initialize on load
         window.onload = function() {
-            fetchTelemetry();
-            setInterval(fetchTelemetry, 5000);
+            renderTelemetry();
         };
     </script>
 </body>

@@ -340,6 +340,7 @@
             const risk = document.getElementById('riskPercent').value;
             const swing = document.getElementById('swingPeriod').value;
             const session = document.getElementById('sessionFilter').value;
+            const useSessionBool = session === 'yes';
 
             if (platform === 'mql5') {
                 generatedCodeStore = `//+------------------------------------------------------------------+\n` +
@@ -348,23 +349,49 @@
                                      `//+------------------------------------------------------------------+\n` +
                                      `#property copyright "Copyright 2026, QTP StratIQ"\n` +
                                      `#property link      "https://qtp-strat-iq.vercel.app"\n` +
-                                     `#property version   "4.20"\n\n` +
+                                     `#property version   "4.22"\n\n` +
+                                     `#include <Trade\\Trade.mqh>\n` +
+                                     `CTrade trade;\n\n` +
                                      `input double InpRiskPercent     = ${risk};     // Risk Percentage per Trade\n` +
                                      `input int    InpSwingLookback  = ${swing};    // Swing Point Lookback\n` +
-                                     `input bool   InpSessionFilter  = ${session === 'yes' ? 'true' : 'false'}; // London/NY Session Filter Only\n` +
+                                     `input bool   InpSessionFilter  = ${useSessionBool}; // London/NY Session Filter Only\n` +
                                      `input string InpStrategyModel   = "${logic.toUpperCase()}";   // Execution Logic Model\n\n` +
                                      `datetime     g_last_bar_time   = 0;\n\n` +
                                      `int OnInit() {\n` +
-                                     `   Print(">>> QTP StratIQ Engine Initialized Successfully.");\n` +
-                                     `   Print(">>> Target Strategy Model: ", InpStrategyModel);\n` +
+                                     `   Print(">>> QTP StratIQ Engine Initialized with Risk & Stop-Loss Protection.");\n` +
                                      `   return(INIT_SUCCEEDED);\n` +
                                      `}\n\n` +
                                      `void OnTick() {\n` +
                                      `   if(!CheckNewBar()) return;\n` +
                                      `   if(InpSessionFilter && !CheckSessionTime()) return;\n` +
-                                     `   bool structure_shift = DetectMarketStructure();\n` +
-                                     `   if(structure_shift) {\n` +
-                                     `      Print(">>> Institutional Market Structure Shift Detected. Evaluating Order...");\n` +
+                                     `   \n` +
+                                     `   double high_arr[], low_arr[], close_arr[];\n` +
+                                     `   ArraySetAsSeries(high_arr, true);\n` +
+                                     `   ArraySetAsSeries(low_arr, true);\n` +
+                                     `   ArraySetAsSeries(close_arr, true);\n` +
+                                     `   \n` +
+                                     `   if(CopyHigh(_Symbol, _Period, 1, InpSwingLookback + 1, high_arr) <= 0) return;\n` +
+                                     `   if(CopyLow(_Symbol, _Period, 1, InpSwingLookback + 1, low_arr) <= 0) return;\n` +
+                                     `   if(CopyClose(_Symbol, _Period, 1, 2, close_arr) <= 0) return;\n` +
+                                     `   \n` +
+                                     `   int highest_index = ArrayMaximum(high_arr, 0, InpSwingLookback);\n` +
+                                     `   int lowest_index  = ArrayMinimum(low_arr, 0, InpSwingLookback);\n` +
+                                     `   if(highest_index == WRONG_VALUE || lowest_index == WRONG_VALUE) return;\n` +
+                                     `   \n` +
+                                     `   double recentHigh = high_arr[highest_index];\n` +
+                                     `   double recentLow  = low_arr[lowest_index];\n` +
+                                     `   \n` +
+                                     `   if(PositionsTotal() == 0) {\n` +
+                                     `      if(close_arr[0] > recentHigh) {\n` +
+                                     `         double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);\n` +
+                                     `         double sl = recentLow;\n` +
+                                     `         trade.Buy(0.1, _Symbol, ask, sl, 0, "QTP Long BOS");\n` +
+                                     `      }\n` +
+                                     `      else if(close_arr[0] < recentLow) {\n` +
+                                     `         double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);\n` +
+                                     `         double sl = recentHigh;\n` +
+                                     `         trade.Sell(0.1, _Symbol, bid, sl, 0, "QTP Short BOS");\n` +
+                                     `      }\n` +
                                      `   }\n` +
                                      `}\n\n` +
                                      `bool CheckNewBar() {\n` +
@@ -380,49 +407,49 @@
                                      `   TimeToStruct(TimeCurrent(), dt);\n` +
                                      `   if(dt.hour >= 7 && dt.hour <= 17) return true;\n` +
                                      `   return false;\n` +
-                                     `}\n\n` +
-                                     `bool DetectMarketStructure() {\n` +
-                                     `   double high_arr[];\n` +
-                                     `   double low_arr[];\n` +
-                                     `   double close_arr[];\n` +
-                                     `   ArraySetAsSeries(high_arr, true);\n` +
-                                     `   ArraySetAsSeries(low_arr, true);\n` +
-                                     `   ArraySetAsSeries(close_arr, true);\n` +
-                                     `   if(CopyHigh(_Symbol, _Period, 1, InpSwingLookback + 1, high_arr) <= 0) return false;\n` +
-                                     `   if(CopyLow(_Symbol, _Period, 1, InpSwingLookback + 1, low_arr) <= 0) return false;\n` +
-                                     `   if(CopyClose(_Symbol, _Period, 1, 2, close_arr) <= 0) return false;\n` +
-                                     `   int highest_index = ArrayMaximum(high_arr, 0, InpSwingLookback);\n` +
-                                     `   int lowest_index  = ArrayMinimum(low_arr, 0, InpSwingLookback);\n` +
-                                     `   if(highest_index == WRONG_VALUE || lowest_index == WRONG_VALUE) return false;\n` +
-                                     `   return (close_arr[0] > high_arr[highest_index] || close_arr[0] < low_arr[lowest_index]);\n` +
                                      `}`;
             } else if (platform === 'webhook') {
                 generatedCodeStore = JSON.stringify({
                     system: "QTP StratIQ Automated Execution",
-                    version: "4.2",
+                    version: "4.22",
                     timestamp: new Date().toISOString(),
                     parameters: {
                         methodology: logic.toUpperCase(),
                         risk_percent: parseFloat(risk),
                         swing_lookback: parseInt(swing),
-                        session_filter: session === 'yes'
+                        session_filter: useSessionBool,
+                        stop_loss_config: {
+                            mode: "swing_dynamic",
+                            lookback_period: parseInt(swing),
+                            buffer_pips: 0
+                        }
                     },
-                    action: "EVALUATE_BREAKOUT"
+                    actions: {
+                        long_entry: "BUY",
+                        long_stop_loss_reference: "swing_low",
+                        short_entry: "SELL",
+                        short_stop_loss_reference: "swing_high"
+                    },
+                    status: "READY_FOR_DISPATCH"
                 }, null, 2);
             } else {
                 generatedCodeStore = `// @version=6\n` +
                                      `strategy("QTP StratIQ Institutional Suite", overlay=true, initial_capital=10000, default_qty_value=${risk})\n\n` +
                                      `i_lookback   = input.int(${swing}, title="Swing Lookback Period")\n` +
                                      `i_model      = input.string("${logic.toUpperCase()}", title="Strategy Methodology")\n` +
-                                     `i_useSession = input.bool(${session === 'yes'}, title="London/NY Session Filter")\n\n` +
+                                     `i_useSession = input.bool(${useSessionBool}, title="London/NY Session Filter")\n\n` +
+                                     `t            = time(timeframe.period, "0700-1700:23456")\n` +
+                                     `sessionCheck = not i_useSession or (not na(t))\n\n` +
                                      `highestHigh = ta.highest(high, i_lookback)\n` +
                                      `lowestLow   = ta.lowest(low, i_lookback)\n\n` +
-                                     `isBOS_Bull  = ta.crossover(close, highestHigh[1])\n` +
-                                     `isBOS_Bear  = ta.crossunder(close, lowestLow[1])\n\n` +
+                                     `isBOS_Bull  = sessionCheck and ta.crossover(close, highestHigh[1])\n` +
+                                     `isBOS_Bear  = sessionCheck and ta.crossunder(close, lowestLow[1])\n\n` +
                                      `if (isBOS_Bull)\n` +
-                                     `    strategy.entry("QTP Long", strategy.long)\n\n` +
+                                     `    strategy.entry("QTP Long", strategy.long)\n` +
+                                     `    strategy.exit("Exit Long", "QTP Long", stop=lowestLow[1])\n\n` +
                                      `if (isBOS_Bear)\n` +
-                                     `    strategy.entry("QTP Short", strategy.short)`;
+                                     `    strategy.entry("QTP Short", strategy.short)\n` +
+                                     `    strategy.exit("Exit Short", "QTP Short", stop=highestHigh[1])`;
             }
 
             openCodeModal();

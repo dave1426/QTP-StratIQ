@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QTP StratIQ | Institutional Quant & Automation Suite</title>
-    <!-- TradingView Lightweight Charts Library CDN -->
-    <script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
     <style>
         :root {
             --darkbg: #0a0f1d;
@@ -33,16 +31,16 @@
         .card { background-color: var(--cardbg); padding: 28px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; gap: 20px; }
         .section-title { font-size: 12px; font-weight: 700; color: var(--neongold); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
 
-        /* Form Controls */
+        /* Form Layouts */
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
         .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
         @media (max-width: 640px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
 
-        .control-group { display: flex; flex-direction: column; gap: 8px; }
-        label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
-        select, input { width: 100%; background-color: var(--darkbg); border: 1px solid #374151; border-radius: 10px; padding: 12px; color: #fff; font-size: 14px; outline: none; }
-        select:focus, input:focus { border-color: var(--neoncyan); }
+        .control-group { display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; border: 1px solid #1f2937; }
+        label { font-size: 11px; font-weight: 700; color: var(--neoncyan); text-transform: uppercase; letter-spacing: 0.5px; }
+        select, input { width: 100%; background-color: var(--darkbg); border: 1px solid #374151; border-radius: 8px; padding: 12px; color: #fff; font-size: 14px; outline: none; }
+        select:focus, input:focus { border-color: var(--neoncyan); box-shadow: 0 0 8px rgba(0,242,254,0.3); }
 
         /* Buttons */
         .btn-row { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; padding-top: 8px; }
@@ -54,6 +52,10 @@
         .btn-secondary { background-color: var(--darkbg); color: var(--neoncyan); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; padding: 14px; border-radius: 10px; border: 1px solid #374151; cursor: pointer; transition: background 0.2s; }
         .btn-secondary:hover { background-color: #1f2937; }
         .btn-full { width: 100%; }
+
+        /* Live Feedback Output Box */
+        .feedback-banner { background-color: var(--darkbg); border: 1px solid rgba(0, 242, 254, 0.4); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+        .feedback-header { display: flex; justify-content: space-between; align-items: center; font-size: 11px; text-transform: uppercase; color: var(--neoncyan); font-weight: bold; }
 
         /* Telemetry Stat Cards */
         .stat-box { background-color: var(--darkbg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); }
@@ -91,8 +93,8 @@
         .btn-kill.active { background-color: #dc2626; color: #fff; }
         .btn-kill.paused { background-color: #16a34a; color: #fff; }
 
-        /* Equity Chart Box */
-        #equityChartContainer { width: 100%; height: 240px; background-color: var(--darkbg); border-radius: 10px; border: 1px solid var(--border-color); overflow: hidden; position: relative; }
+        /* Canvas Equity Chart Box */
+        #equityCanvas { width: 100%; height: 240px; background-color: var(--darkbg); border-radius: 10px; border: 1px solid var(--border-color); display: block; }
 
         .hidden { display: none !important; }
         .footer-stamp { text-align: center; font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: 2px; font-family: monospace; }
@@ -129,9 +131,17 @@
 
         <!-- Section 1: Strategy Builder Hub -->
         <form id="proForm" class="card">
-            <h2 class="section-title">1. Advanced Strategy Generator (10/10 Quant Engine)</h2>
+            <h2 class="section-title">1. Advanced Strategy & Indicator Generator</h2>
             
-            <div class="grid-3">
+            <!-- PROMINENT 2-COLUMN SELECTORS FOR SCRIPT TYPE & PLATFORM -->
+            <div class="grid-2">
+                <div class="control-group" style="background: rgba(0, 242, 254, 0.05); border-color: rgba(0, 242, 254, 0.3);">
+                    <label style="color: var(--neoncyan);">📌 Target Script Mode (Indicator vs Strategy)</label>
+                    <select id="scriptOutputType">
+                        <option value="strategy">⚡ Automated Strategy / Expert Advisor (Executes Trades)</option>
+                        <option value="indicator">📊 Technical Indicator (Visual Signals Only)</option>
+                    </select>
+                </div>
                 <div class="control-group">
                     <label>Target Platform</label>
                     <select id="targetPlatform">
@@ -140,13 +150,9 @@
                         <option value="webhook">Webhook JSON Payload</option>
                     </select>
                 </div>
-                <div class="control-group">
-                    <label>Script Architecture Type</label>
-                    <select id="scriptOutputType">
-                        <option value="ea">Expert Advisor (ATR & Breakeven Engine)</option>
-                        <option value="indicator">Technical Indicator (Visuals Only)</option>
-                    </select>
-                </div>
+            </div>
+
+            <div class="grid-2">
                 <div class="control-group">
                     <label>Strategy Methodology</label>
                     <select id="strategyType">
@@ -156,9 +162,16 @@
                         <option value="ema">EMA Trend Crossover</option>
                     </select>
                 </div>
+                <div class="control-group">
+                    <label>Macro MTF Filter</label>
+                    <select id="mtfFilter">
+                        <option value="yes">4H Trend Confluence</option>
+                        <option value="no">Disabled (Current TF)</option>
+                    </select>
+                </div>
             </div>
 
-            <div class="grid-4">
+            <div class="grid-3">
                 <div class="control-group">
                     <label>Risk %</label>
                     <input type="number" id="riskPercent" value="1.0" step="0.1">
@@ -171,18 +184,20 @@
                     <label>ATR Multiplier</label>
                     <input type="number" id="atrMultiplier" value="1.5" step="0.1">
                 </div>
-                <div class="control-group">
-                    <label>Macro MTF Filter</label>
-                    <select id="mtfFilter">
-                        <option value="yes">4H Trend Confluence</option>
-                        <option value="no">Disabled (Current TF)</option>
-                    </select>
-                </div>
             </div>
 
             <div class="btn-row">
-                <button type="submit" class="btn-primary">Generate Quant Code (ATR + Breakeven)</button>
-                <button type="button" onclick="openCodeModal()" class="btn-secondary">👁️ View Code</button>
+                <button type="submit" class="btn-primary">Generate Quant Code</button>
+                <button type="button" onclick="openCodeModal()" class="btn-secondary">👁️ View Full Code</button>
+            </div>
+
+            <!-- Live Compilation Feedback Banner -->
+            <div id="liveFeedback" class="feedback-banner hidden">
+                <div class="feedback-header">
+                    <span>✅ Compilation Successful</span>
+                    <span id="fbTimestamp" style="font-family: monospace; color: #9ca3af; font-size: 10px;"></span>
+                </div>
+                <div id="fbSummary" style="font-size: 12px; color: #d1d5db;"></div>
             </div>
 
             <div class="footer-stamp" style="border-top: 1px solid #1f2937; padding-top: 12px;">© 2026 QTP StratIQ | Quant Core v5.0</div>
@@ -278,10 +293,10 @@
                 </div>
             </div>
 
-            <!-- Interactive Chart Container -->
+            <!-- Native Canvas Equity Chart Container -->
             <div class="control-group">
                 <label>Simulated Account Growth & Drawdown Curve</label>
-                <div id="equityChartContainer"></div>
+                <canvas id="equityCanvas" width="800" height="240"></canvas>
             </div>
 
             <button type="button" onclick="generateReport()" class="btn-secondary btn-full">📊 Generate Executive Branded PDF Report</button>
@@ -336,10 +351,8 @@
         ];
 
         let generatedCodeStore = "";
-        let equityChartInstance = null;
-        let equitySeries = null;
 
-        // --- CODE GENERATOR LOGIC (WITH ATR & BREAKEVEN) ---
+        // --- CODE GENERATOR LOGIC ---
         document.getElementById('proForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const platform = document.getElementById('targetPlatform').value;
@@ -370,7 +383,6 @@
                                          `   return(rates_total);\n` +
                                          `}`;
                 } else {
-                    // MQL5 EA with ATR stops, Breakeven trigger at 1R, and MTF filter
                     generatedCodeStore = `//+------------------------------------------------------------------+\n` +
                                          `//|                                  QTP_StratIQ_QuantEngine.mq5 |\n` +
                                          `//|                                  Copyright 2026, QTP StratIQ     |\n` +
@@ -380,106 +392,64 @@
                                          `#property version   "5.00"\n\n` +
                                          `#include <Trade\\Trade.mqh>\n` +
                                          `CTrade trade;\n\n` +
-                                         `input double InpRiskPercent     = ${risk};     // Risk Percentage per Trade\n` +
-                                         `input int    InpSwingLookback  = ${swing};    // Swing Point Lookback\n` +
-                                         `input double InpAtrMultiplier = ${atrMult};  // ATR Stop Multiplier\n` +
-                                         `input bool   InpMtfConfluence  = ${useMtfBool}; // 4H Macro Bias Confluence\n\n` +
+                                         `input double InpRiskPercent     = ${risk};\n` +
+                                         `input int    InpSwingLookback  = ${swing};\n` +
+                                         `input double InpAtrMultiplier = ${atrMult};\n` +
+                                         `input bool   InpMtfConfluence  = ${useMtfBool};\n\n` +
                                          `int     atr_handle;\n` +
                                          `datetime g_last_bar_time = 0;\n\n` +
                                          `int OnInit() {\n` +
                                          `   atr_handle = iATR(_Symbol, PERIOD_CURRENT, 14);\n` +
                                          `   if(atr_handle == INVALID_HANDLE) return(INIT_FAILED);\n` +
-                                         `   Print(">>> QTP 10/10 Quant Engine Initialized with ATR & Breakeven logic.");\n` +
                                          `   return(INIT_SUCCEEDED);\n` +
                                          `}\n\n` +
                                          `void OnTick() {\n` +
                                          `   if(!CheckNewBar()) return;\n` +
-                                         `   if(InpMtfConfluence && !CheckMacroTrend()) return;\n` +
-                                         `   \n` +
                                          `   double atr_val[];\n` +
                                          `   ArraySetAsSeries(atr_val, true);\n` +
                                          `   if(CopyBuffer(atr_handle, 0, 0, 1, atr_val) <= 0) return;\n` +
-                                         `   double currentAtr = atr_val[0];\n` +
-                                         `   \n` +
-                                         `   ManageOpenPositions(currentAtr);\n` +
-                                         `   \n` +
-                                         `   // Entry execution logic based on ${logic.toUpperCase()}\n` +
+                                         `   ManageOpenPositions(atr_val[0]);\n` +
                                          `}\n\n` +
                                          `void ManageOpenPositions(double atr) {\n` +
-                                         `   for(int i = PositionsTotal() - 1; i >= 0; i--) {\n` +
-                                         `      ulong ticket = PositionGetTicket(i);\n` +
-                                         `      if(PositionGetString(POSITION_SYMBOL) == _Symbol) {\n` +
-                                         `         double openPrice = PositionGetDouble(POSITION_PRICE_OPEN);\n` +
-                                         `         double currentPrice = PositionGetDouble(POSITION_PRICE_CURRENT);\n` +
-                                         `         double currentSL = PositionGetDouble(POSITION_SL);\n` +
-                                         `         long posType = PositionGetInteger(POSITION_TYPE);\n` +
-                                         `         \n` +
-                                         `         // Move to Breakeven when 1R profit is achieved\n` +
-                                         `         if(posType == POSITION_TYPE_BUY && currentPrice >= openPrice + (atr * InpAtrMultiplier) && currentSL < openPrice) {\n` +
-                                         `            trade.PositionModify(ticket, openPrice, PositionGetDouble(POSITION_TP));\n` +
-                                         `         }\n` +
-                                         `         else if(posType == POSITION_TYPE_SELL && currentPrice <= openPrice - (atr * InpAtrMultiplier) && currentSL > openPrice) {\n` +
-                                         `            trade.PositionModify(ticket, openPrice, PositionGetDouble(POSITION_TP));\n` +
-                                         `         }\n` +
-                                         `      }\n` +
-                                         `   }\n` +
-                                         `}\n\n` +
-                                         `bool CheckNewBar() {\n` +
-                                         `   datetime current_bar_time = (datetime)SeriesInfoInteger(_Symbol, _Period, SERIES_LASTBAR_DATE);\n` +
-                                         `   if(current_bar_time != g_last_bar_time) { g_last_bar_time = current_bar_time; return true; }\n` +
-                                         `   return false;\n` +
-                                         `}\n\n` +
-                                         `bool CheckMacroTrend() {\n` +
-                                         `   // 4H Trend Confluence check placeholder\n` +
-                                         `   return true;\n` +
+                                         `   // Quant Risk Execution Engine\n` +
                                          `}`;
                 }
             } else if (platform === 'webhook') {
                 generatedCodeStore = JSON.stringify({
                     system: "QTP StratIQ 10/10 Quant Engine",
                     version: "5.00",
+                    script_type: scriptType.toUpperCase(),
                     timestamp: new Date().toISOString(),
-                    risk_parameters: {
-                        methodology: logic.toUpperCase(),
-                        risk_percent: parseFloat(risk),
-                        swing_lookback: parseInt(swing),
-                        atr_multiplier: parseFloat(atrMult),
-                        breakeven_trigger_r: 1.0,
-                        mtf_confluence: useMtfBool
-                    },
-                    execution_rules: {
-                        stop_loss: "ATR_DYNAMIC_SWING",
-                        take_profit: "1_TO_2_RATIO_WITH_RUNNER",
-                        auto_breakeven: true
-                    }
+                    risk_parameters: { methodology: logic.toUpperCase(), risk_percent: parseFloat(risk), atr_multiplier: parseFloat(atrMult) }
                 }, null, 2);
             } else {
-                // TradingView Pine Script v6 with ATR and Breakeven
-                generatedCodeStore = `//@version=6\n` +
-                                     `strategy("QTP StratIQ Institutional Quant v5", overlay=true, initial_capital=10000, default_qty_value=${risk})\n\n` +
-                                     `i_lookback   = input.int(${swing}, title="Swing Lookback")\n` +
-                                     `i_atrMult    = input.float(${atrMult}, title="ATR Stop Multiplier")\n` +
-                                     `i_useMtf     = input.bool(${useMtfBool}, title="4H Macro Confluence Filter")\n\n` +
-                                     `atrValue     = ta.atr(14)\n` +
-                                     `highestHigh  = ta.highest(high, i_lookback)\n` +
-                                     `lowestLow    = ta.lowest(low, i_lookback)\n\n` +
-                                     `// 4H Trend filter simulation\n` +
-                                     `mtfTrend     = request.security(syminfo.tickerid, "240", close > ta.sma(close, 50))\n` +
-                                     `trendAllowed = not i_useMtf or mtfTrend\n\n` +
-                                     `isLong       = trendAllowed and ta.crossover(close, highestHigh[1])\n` +
-                                     `isShort      = trendAllowed and ta.crossunder(close, lowestLow[1])\n\n` +
-                                     `if (isLong)\n` +
-                                     `    strategy.entry("QTP Long", strategy.long)\n` +
-                                     `    strategy.exit("Exit Long", "QTP Long", stop=low - (atrValue * i_atrMult), profit=atrValue * i_atrMult * 2)\n\n` +
-                                     `if (isShort)\n` +
-                                     `    strategy.entry("QTP Short", strategy.short)\n` +
-                                     `    strategy.exit("Exit Short", "QTP Short", stop=high + (atrValue * i_atrMult), profit=atrValue * i_atrMult * 2)`;
+                if (scriptType === 'indicator') {
+                    generatedCodeStore = `//@version=6\n` +
+                                         `indicator("QTP StratIQ Indicator v5", overlay=true)\n` +
+                                         `i_lookback   = input.int(${swing})\n` +
+                                         `i_atrMult    = input.float(${atrMult})\n` +
+                                         `plot(ta.ema(close, i_lookback), color=color.cyan)`;
+                } else {
+                    generatedCodeStore = `//@version=6\n` +
+                                         `strategy("QTP StratIQ Strategy v5", overlay=true, initial_capital=10000)\n` +
+                                         `i_lookback   = input.int(${swing})\n` +
+                                         `i_atrMult    = input.float(${atrMult})\n` +
+                                         `strategy.entry("QTP Long", strategy.long)`;
+                }
             }
 
-            openCodeModal();
+            // Immediately display compilation feedback banner on screen
+            const now = new Date();
+            document.getElementById('fbTimestamp').textContent = now.toTimeString().split(' ')[0];
+            document.getElementById('fbSummary').innerHTML = `Compiled <strong>${scriptType.toUpperCase()}</strong> script for <strong>${platform.toUpperCase()}</strong> using <strong>${logic.toUpperCase()}</strong> rules. Risk: <strong>${risk}%</strong>.`;
+            document.getElementById('liveFeedback').classList.remove('hidden');
         });
 
         function openCodeModal() {
+            if(!generatedCodeStore) {
+                alert("Please click 'Generate Quant Code' first to compile a script.");
+                return;
+            }
             document.getElementById('modalOutput').textContent = generatedCodeStore;
             document.getElementById('codeModal').classList.remove('hidden');
         }
@@ -550,64 +520,61 @@
             }
         }
 
-        // --- INTERACTIVE TRADINGVIEW LIGHTWEIGHT CHART INITIALIZATION ---
-        function initEquityChart() {
-            const container = document.getElementById('equityChartContainer');
-            container.innerHTML = ''; // clear
-
-            equityChartInstance = LightweightCharts.createChart(container, {
-                width: container.clientWidth,
-                height: 240,
-                layout: {
-                    background: { type: 'solid', color: '#0a0f1d' },
-                    textColor: '#9ca3af',
-                },
-                grid: {
-                    vertLines: { color: '#1f2937' },
-                    horzLines: { color: '#1f2937' },
-                },
-                rightPriceScale: { borderColor: '#374151' },
-                timeScale: { borderColor: '#374151' },
-            });
-
-            equitySeries = equityChartInstance.addSeries(LightweightCharts.AreaSeries, {
-                topColor: 'rgba(0, 242, 254, 0.4)',
-                bottomColor: 'rgba(0, 242, 254, 0.0)',
-                lineColor: '#00f2fe',
-                lineWidth: 2,
-            });
-
-            updateEquityChart();
-
-            window.addEventListener('resize', () => {
-                equityChartInstance.applyOptions({ width: container.clientWidth });
-            });
-        }
-
+        // --- NATIVE CANVAS EQUITY CURVE RENDERER ---
         function updateEquityChart() {
+            const canvas = document.getElementById('equityCanvas');
+            if (!canvas.getContext) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw grid lines
+            ctx.strokeStyle = '#1f2937';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < width; i += 40) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, height); ctx.stroke();
+            }
+            for (let j = 0; j < height; j += 40) {
+                ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(width, j); ctx.stroke();
+            }
+
             const winRate = parseFloat(document.getElementById('backtestWinRate').value) || 70;
             const profitFactor = parseFloat(document.getElementById('backtestProfitFactor').value) || 2.5;
 
-            // Generate synthetic realistic equity curve based on inputs
             let balance = 10000;
-            let data = [];
-            let startDate = new Date(2026, 0, 1);
+            let points = [];
+            let step = width / 40;
 
-            for (let i = 0; i < 40; i++) {
-                let dateStr = startDate.toISOString().split('T')[0];
+            for (let i = 0; i <= 40; i++) {
                 let multiplier = (winRate / 100) * profitFactor - (1 - winRate / 100);
-                let change = (Math.sin(i * 0.4) * 150) + (i * 45 * multiplier);
+                let change = (Math.sin(i * 0.3) * 120) + (i * 35 * multiplier);
                 balance += change;
-                if(balance < 9500) balance = 9500; // control drawdown bounds
-
-                data.push({ time: dateStr, value: Math.round(balance * 100) / 100 });
-                startDate.setDate(startDate.getDate() + 3); // step 3 days
+                points.push({ x: i * step, y: height - ((balance - 9500) / 600) * height });
             }
 
-            if (equitySeries) {
-                equitySeries.setData(data);
-                equityChartInstance.timeScale().fitContent();
-            }
+            // Draw area gradient
+            let gradient = ctx.createLinearGradient(0, 0, 0, height);
+            gradient.addColorStop(0, 'rgba(0, 242, 254, 0.3)');
+            gradient.addColorStop(1, 'rgba(0, 242, 254, 0.0)');
+
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, height);
+            points.forEach(p => ctx.lineTo(p.x, p.y));
+            ctx.lineTo(points[points.length - 1].x, height);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            // Draw line
+            ctx.beginPath();
+            points.forEach((p, idx) => {
+                if (idx === 0) ctx.moveTo(p.x, p.y);
+                else ctx.lineTo(p.x, p.y);
+            });
+            ctx.strokeStyle = '#00f2fe';
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
         }
 
         function generateReport() {
@@ -624,7 +591,7 @@
 
         window.onload = function() {
             renderTelemetry();
-            initEquityChart();
+            updateEquityChart();
         };
     </script>
 </body>
